@@ -499,7 +499,7 @@ function generate404(recherche) {
 export async function onRequest(context) {
     const url = new URL(context.request.url);
     const path = url.pathname;
-    const match = path.match(/^\\/serrurier\\/(.+)$/);
+    const match = path.match(/^\/serrurier\/(.+)$/);
     
     if (!match) return new Response('Not Found', { status: 404 });
     
