@@ -3,7 +3,9 @@ const DEPARTEMENTS_ACTIFS = {
     "22": "Cotes-d'Armor", "30": "Gard", "31": "Haute-Garonne", "33": "Gironde",
     "34": "Herault", "35": "Ille-et-Vilaine", "44": "Loire-Atlantique",
     "49": "Maine-et-Loire", "50": "Manche", "54": "Meurthe-et-Moselle",
-    "56": "Morbihan", "69": "Rhone", "74": "Haute-Savoie", "83": "Var", "85": "Vendee",
+    "56": "Morbihan", "69": "Rhone", "74": "Haute-Savoie", "83": "Var", "85": "Vendee","75": "Paris",
+    "77": "Seine-et-Marne", "78": "Yvelines", "91": "Essonne","92": "Hauts-de-Seine",
+    "93": "Seine-Saint-Denis", "94": "Val-de-Marne", "95": "Val-d'Oise",
 };
 
 const REGIONS = {
@@ -15,6 +17,7 @@ const REGIONS = {
     "auvergne-rhone-alpes": { nom: "Auvergne-Rhone-Alpes", departements: ["69", "74"] },
     "normandie": { nom: "Normandie", departements: ["50"] },
     "grand-est": { nom: "Grand Est", departements: ["54"] }
+    "ile-de-france": { nom: "Ile-de-France", departements: ["75", "77", "78", "91", "92", "93", "94", "95"] },
 };
 
 function slugify(text) {
