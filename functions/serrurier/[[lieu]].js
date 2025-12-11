@@ -19,7 +19,7 @@ const REGIONS = {
     "provence-alpes-cote-d-azur": { nom: "Provence-Alpes-Côte d'Azur", departements: ["06", "13", "83"] },
     "auvergne-rhone-alpes": { nom: "Auvergne-Rhône-Alpes", departements: ["69", "74"] },
     "normandie": { nom: "Normandie", departements: ["50"] },
-    "grand-est": { nom: "Grand Est", departements: ["54"] }
+    "grand-est": { nom: "Grand Est", departements: ["54"] },
     "ile-de-france": { nom: "Ile-de-France", departements: ["75", "77", "78", "91", "92", "93", "94", "95"] },
 };
 
