@@ -131,12 +131,12 @@ function generateSOSHTML(nom, titreComplet) {
     html += '.line:nth-child(4){top:80%;width:180px;animation:moveLines 9s linear infinite 1s}';
     html += '.line:nth-child(5){top:10%;width:120px;animation:moveLines 11s linear infinite 3s}';
     
-    // Animation Neon Background
-    html += '.neon-bg{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;opacity:0.15}';
+    // Animation Neon Background - Plus vif et prononcé
+    html += '.neon-bg{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;opacity:0.5}';
     html += '.neon-bg svg{width:100%;height:100%}';
-    html += '.neon-path{fill:none;stroke:var(--red);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 8px var(--red)) drop-shadow(0 0 20px var(--red)) drop-shadow(0 0 40px rgba(220,38,38,0.5))}';
-    html += '.key-path{stroke-dasharray:1000;stroke-dashoffset:1000;animation:drawKey 8s ease-in-out infinite}';
-    html += '.lock-path{stroke-dasharray:800;stroke-dashoffset:800;animation:drawLock 8s ease-in-out infinite 8s}';
+    html += '.neon-path{fill:none;stroke:var(--red);stroke-width:4;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 10px var(--red)) drop-shadow(0 0 30px var(--red)) drop-shadow(0 0 60px var(--red)) drop-shadow(0 0 100px rgba(220,38,38,0.8))}';
+    html += '.key-path{stroke-dasharray:1000;stroke-dashoffset:1000;animation:drawKey 6s ease-in-out infinite}';
+    html += '.lock-path{stroke-dasharray:800;stroke-dashoffset:800;animation:drawLock 6s ease-in-out infinite 3s}';
     html += '@keyframes drawKey{0%{stroke-dashoffset:1000;opacity:0}10%{opacity:1}50%{stroke-dashoffset:0;opacity:1}60%{opacity:1}100%{stroke-dashoffset:-1000;opacity:0}}';
     html += '@keyframes drawLock{0%{stroke-dashoffset:800;opacity:0}10%{opacity:1}50%{stroke-dashoffset:0;opacity:1}60%{opacity:1}100%{stroke-dashoffset:-800;opacity:0}}';
     
