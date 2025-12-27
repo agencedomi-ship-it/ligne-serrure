@@ -51,25 +51,59 @@ async function getVillesDepartement(codeDep) {
     } catch (error) { return []; }
 }
 
+async function rechercherParCodePostal(cp) {
+    try {
+        var response = await fetch("https://geo.api.gouv.fr/communes?codePostal=" + cp + "&fields=nom,code,codeDepartement,codesPostaux");
+        if (!response.ok) return [];
+        var villes = await response.json();
+        var suggestions = [];
+        for (var i = 0; i < villes.length; i++) {
+            var v = villes[i];
+            if (DEPARTEMENTS_ACTIFS[v.codeDepartement]) {
+                suggestions.push({ 
+                    type: "ville", 
+                    nom: v.nom + " (" + cp + ")", 
+                    slug: slugify(v.nom)
+                });
+            }
+        }
+        return suggestions;
+    } catch (error) { return []; }
+}
+
 async function rechercherSuggestions(query, limit) {
     var slug = slugify(query);
     var suggestions = [];
     var queryClean = query.trim();
     
+    // Recherche par code postal complet (5 chiffres)
     if (/^\d{5}$/.test(queryClean)) {
         var codeDep = queryClean.substring(0, 2);
+        // Cas spécial pour la Corse
+        if (queryClean.startsWith("20")) {
+            codeDep = queryClean.substring(0, 3) === "201" ? "2A" : "2B";
+        }
+        
+        // Recherche directe par code postal via l'API
+        var villesCP = await rechercherParCodePostal(queryClean);
+        if (villesCP.length > 0) {
+            return villesCP.slice(0, limit);
+        }
+        
+        // Fallback: chercher dans le département
         if (DEPARTEMENTS_ACTIFS[codeDep]) {
             var villes = await getVillesDepartement(codeDep);
             for (var i = 0; i < villes.length; i++) {
                 var v = villes[i];
                 if (v.codesPostaux && v.codesPostaux.indexOf(queryClean) !== -1) {
-                    suggestions.push({ type: "code_postal", nom: v.nom + " (" + queryClean + ")", slug: queryClean });
+                    suggestions.push({ type: "ville", nom: v.nom + " (" + queryClean + ")", slug: slugify(v.nom) });
                 }
             }
         }
         return suggestions.slice(0, limit);
     }
     
+    // Recherche par début de code postal (2-4 chiffres)
     if (/^\d{2,4}$/.test(queryClean)) {
         var codeDep = queryClean.substring(0, 2);
         if (DEPARTEMENTS_ACTIFS[codeDep]) {
@@ -77,7 +111,7 @@ async function rechercherSuggestions(query, limit) {
                 suggestions.push({ type: "departement", nom: DEPARTEMENTS_ACTIFS[codeDep] + " (" + codeDep + ")", slug: codeDep });
             }
             var villes = await getVillesDepartement(codeDep);
-            for (var i = 0; i < villes.length; i++) {
+            for (var i = 0; i < villes.length && suggestions.length < limit; i++) {
                 var v = villes[i];
                 if (v.codesPostaux) {
                     for (var j = 0; j < v.codesPostaux.length; j++) {
@@ -85,10 +119,10 @@ async function rechercherSuggestions(query, limit) {
                         if (cp.indexOf(queryClean) === 0) {
                             var exists = false;
                             for (var k = 0; k < suggestions.length; k++) {
-                                if (suggestions[k].nom.indexOf(cp) !== -1) exists = true;
+                                if (suggestions[k].slug === slugify(v.nom)) exists = true;
                             }
                             if (!exists) {
-                                suggestions.push({ type: "code_postal", nom: v.nom + " (" + cp + ")", slug: cp });
+                                suggestions.push({ type: "ville", nom: v.nom + " (" + cp + ")", slug: slugify(v.nom) });
                             }
                         }
                     }
@@ -98,13 +132,15 @@ async function rechercherSuggestions(query, limit) {
         return suggestions.slice(0, limit);
     }
     
+    // Recherche par nom de département
     for (var code in DEPARTEMENTS_ACTIFS) {
         var nom = DEPARTEMENTS_ACTIFS[code];
-        if (code.indexOf(queryClean) !== -1 || slugify(nom).indexOf(slug) !== -1) {
+        if (slugify(nom).indexOf(slug) !== -1 || code.indexOf(queryClean) === 0) {
             suggestions.push({ type: "departement", nom: nom + " (" + code + ")", slug: code });
         }
     }
     
+    // Recherche par nom de région
     for (var regionSlug in REGIONS) {
         var regionData = REGIONS[regionSlug];
         if (slugify(regionData.nom).indexOf(slug) !== -1) {
@@ -112,22 +148,26 @@ async function rechercherSuggestions(query, limit) {
         }
     }
     
+    // Recherche par nom de ville
     if (query.length >= 2) {
-        for (var codeDep in DEPARTEMENTS_ACTIFS) {
-            var villes = await getVillesDepartement(codeDep);
-            for (var i = 0; i < villes.length; i++) {
-                var v = villes[i];
-                if (slugify(v.nom).indexOf(slug) !== -1) {
-                    var exists = false;
-                    for (var k = 0; k < suggestions.length; k++) {
-                        if (suggestions[k].slug === slugify(v.nom)) exists = true;
-                    }
-                    if (!exists) {
-                        suggestions.push({ type: "ville", nom: v.nom + " (" + codeDep + ")", slug: slugify(v.nom) });
+        try {
+            var response = await fetch("https://geo.api.gouv.fr/communes?nom=" + encodeURIComponent(queryClean) + "&fields=nom,code,codeDepartement&limit=20");
+            if (response.ok) {
+                var villes = await response.json();
+                for (var i = 0; i < villes.length && suggestions.length < limit; i++) {
+                    var v = villes[i];
+                    if (DEPARTEMENTS_ACTIFS[v.codeDepartement]) {
+                        var exists = false;
+                        for (var k = 0; k < suggestions.length; k++) {
+                            if (suggestions[k].slug === slugify(v.nom)) exists = true;
+                        }
+                        if (!exists) {
+                            suggestions.push({ type: "ville", nom: v.nom + " (" + v.codeDepartement + ")", slug: slugify(v.nom) });
+                        }
                     }
                 }
             }
-        }
+        } catch (e) {}
     }
     
     return suggestions.slice(0, limit);
