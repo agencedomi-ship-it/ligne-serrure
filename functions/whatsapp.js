@@ -1,155 +1,256 @@
-var DEPARTEMENTS_ACTIFS = {
-    "06": "Alpes-Maritimes", "13": "Bouches-du-Rhone", "17": "Charente-Maritime",
-    "22": "Cotes-d-Armor", "30": "Gard", "31": "Haute-Garonne", "33": "Gironde",
-    "34": "Herault", "35": "Ille-et-Vilaine", "44": "Loire-Atlantique",
-    "49": "Maine-et-Loire", "50": "Manche", "54": "Meurthe-et-Moselle",
-    "56": "Morbihan", "69": "Rhone", "74": "Haute-Savoie", "83": "Var", "85": "Vendee",
-    "75": "Paris", "77": "Seine-et-Marne", "78": "Yvelines", "91": "Essonne",
-    "92": "Hauts-de-Seine", "93": "Seine-Saint-Denis", "94": "Val-de-Marne", "95": "Val-d-Oise"
-};
-
-var REGIONS = {
-    "nouvelle-aquitaine": { nom: "Nouvelle-Aquitaine", departements: ["17", "33"] },
-    "pays-de-la-loire": { nom: "Pays de la Loire", departements: ["44", "49", "85"] },
-    "bretagne": { nom: "Bretagne", departements: ["22", "35", "56"] },
-    "occitanie": { nom: "Occitanie", departements: ["30", "31", "34"] },
-    "provence-alpes-cote-d-azur": { nom: "Provence-Alpes-Cote d Azur", departements: ["06", "13", "83"] },
-    "auvergne-rhone-alpes": { nom: "Auvergne-Rhone-Alpes", departements: ["69", "74"] },
-    "normandie": { nom: "Normandie", departements: ["50"] },
-    "grand-est": { nom: "Grand Est", departements: ["54"] },
-    "ile-de-france": { nom: "Ile-de-France", departements: ["75", "77", "78", "91", "92", "93", "94", "95"] }
-};
-
-var TELEGRAM = { botToken: "8509813115:AAHJXvp9_AHBFTpA-S7Td0IEXgZJatVSwdI", chatId: "-4875894499" };
-
-function slugify(text) {
-    return text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
-}
-
-async function validerLieu(recherche) {
-    var slug = slugify(recherche);
-    var rechercheClean = recherche.trim();
-    if (DEPARTEMENTS_ACTIFS[rechercheClean]) {
-        return { valide: true, type: "departement", code: rechercheClean, nom: DEPARTEMENTS_ACTIFS[rechercheClean], slug: rechercheClean };
-    }
-    for (var code in DEPARTEMENTS_ACTIFS) {
-        if (slugify(DEPARTEMENTS_ACTIFS[code]) === slug) {
-            return { valide: true, type: "departement", code: code, nom: DEPARTEMENTS_ACTIFS[code], slug: code };
-        }
-    }
-    for (var regionSlug in REGIONS) {
-        var regionData = REGIONS[regionSlug];
-        if (slug === regionSlug || slug === slugify(regionData.nom)) {
-            var depActifs = regionData.departements.filter(function(d) { return DEPARTEMENTS_ACTIFS[d]; });
-            if (depActifs.length > 0) {
-                return { valide: true, type: "region", code: regionSlug, nom: regionData.nom, slug: regionSlug, departements: depActifs };
-            }
-        }
-    }
-    var rechercheVille = rechercheClean.replace(/-/g, " ");
-    try {
-        var response = await fetch("https://geo.api.gouv.fr/communes?nom=" + encodeURIComponent(rechercheVille) + "&fields=nom,code,codeDepartement&limit=5");
-        if (response.ok) {
-            var villes = await response.json();
-            for (var i = 0; i < villes.length; i++) {
-                var ville = villes[i];
-                if (DEPARTEMENTS_ACTIFS[ville.codeDepartement]) {
-                    if (slugify(ville.nom) === slug || slug.includes(slugify(ville.nom)) || slugify(ville.nom).includes(slug)) {
-                        return { valide: true, type: "ville", code: ville.code, nom: ville.nom, slug: slugify(ville.nom), departement: ville.codeDepartement };
-                    }
-                }
-            }
-        }
-    } catch (e) {}
-    return { valide: false, raison: "lieu_non_trouve" };
-}
-
-function generateHTML(lieu, data) {
-    var nom = data.nom;
-    var type = data.type;
-    var prefix = "a ";
-    if (type === "departement") prefix = "dans le ";
-    if (type === "region") prefix = "en ";
-    var titreComplet = prefix + nom;
-    var TEL = "01 84 60 60 60";
-    var TEL_CLEAN = TEL.replace(/\s/g, "");
-    var MARQUE = "Ligne-Serrure";
+export async function onRequest(context) {
+    var TELEGRAM = { botToken: "8478377033:AAECMsQCzeae_oi-5ScmCmYMeB8acEvHYUw", chatId: "-5210740167" };
     
     var html = '<!DOCTYPE html><html lang="fr"><head>';
-    html += '<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">';
-    html += '<title>' + MARQUE + ' ' + nom + ' | URGENCE 24H/24</title>';
-    html += '<meta name="description" content="URGENCE Serrurier ' + titreComplet + '. Intervention en 15 minutes, 24h/24.">';
-    html += '<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">';
-    html += '<script type="application/ld+json">{"@context":"https://schema.org","@type":"LocalBusiness","name":"' + MARQUE + ' ' + nom + '","telephone":"' + TEL + '","openingHours":"Mo-Su 00:00-23:59","aggregateRating":{"@type":"AggregateRating","ratingValue":"4.9","reviewCount":"347"}}</script>';
+    html += '<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">';
+    html += '<title>Contact WhatsApp | Ligne-Serrure</title>';
+    html += '<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">';
     html += '<style>';
-    html += ':root{--green:#22C55E;--green-dark:#16A34A;--red:#DC2626;--red-dark:#B91C1C;--red-light:#FEE2E2;--dark:#1F2937;--gray:#6B7280;--gray-light:#F9FAFB;--white:#FFFFFF;--whatsapp:#25D366}';
-    html += '*{margin:0;padding:0;box-sizing:border-box}body{font-family:"Open Sans",sans-serif;color:var(--dark);background:var(--white)}h1,h2,h3,h4{font-family:"Oswald",sans-serif;font-weight:700}';
-    html += '@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}@keyframes dotPulse{0%,100%{opacity:1}50%{opacity:0.5}}@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}';
-    html += '.urgence-bar{background:var(--red);padding:10px 0;text-align:center;color:var(--white);font-size:14px}.urgence-bar span{margin:0 10px}.viewers-dot{display:inline-block;width:8px;height:8px;background:#22C55E;border-radius:50%;animation:dotPulse 1.5s infinite;margin-right:5px}';
-    html += 'header{background:var(--white);box-shadow:0 2px 10px rgba(0,0,0,0.1);position:sticky;top:0;z-index:100}.header-inner{max-width:1200px;margin:0 auto;padding:15px 20px;display:flex;justify-content:space-between;align-items:center}.logo{display:flex;align-items:center;gap:10px;text-decoration:none}.logo-icon{width:50px;height:50px;background:var(--red);border-radius:10px;display:flex;align-items:center;justify-content:center}.logo-icon svg{width:28px;height:28px;fill:var(--white)}.logo-text{font-family:"Oswald",sans-serif;font-size:24px;color:var(--dark)}.logo-text span{color:var(--red)}.header-phone{display:flex;align-items:center;gap:8px;background:var(--green);color:var(--white);padding:12px 25px;border-radius:50px;text-decoration:none;font-weight:700;animation:pulse 2s infinite}.header-phone svg{width:20px;height:20px;fill:var(--white)}';
-    html += '.hero{background:linear-gradient(rgba(0,0,0,0.6),rgba(0,0,0,0.6)),url("/images/camion.png") center/cover;padding:60px 0}.hero-inner{max-width:1200px;margin:0 auto;padding:0 20px;display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center}.hero-content{color:var(--white)}.status-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(34,197,94,0.2);border:1px solid var(--green);padding:8px 16px;border-radius:50px;margin-bottom:20px;font-size:13px;color:var(--green)}.status-badge .dot{width:8px;height:8px;background:var(--green);border-radius:50%;animation:dotPulse 1.5s infinite}.hero h1{font-size:42px;margin-bottom:15px}.hero h1 span{color:var(--red)}.hero-subtitle{font-size:16px;opacity:0.9;margin-bottom:20px}.hero-features{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:20px}.hero-feature{display:flex;align-items:center;gap:6px;background:var(--white);color:var(--dark);padding:8px 12px;border-radius:8px;font-size:12px;font-weight:600}.hero-feature svg{width:16px;height:16px;fill:var(--red)}.hero-buttons{display:flex;gap:12px;flex-wrap:wrap}.btn-call{display:inline-flex;align-items:center;gap:8px;background:var(--green);color:var(--white);padding:14px 28px;border-radius:10px;text-decoration:none;font-family:"Oswald",sans-serif;font-size:16px;animation:pulse 2s infinite}.btn-call svg{width:20px;height:20px;fill:var(--white)}.btn-devis{display:inline-flex;align-items:center;background:var(--white);color:var(--red);padding:14px 28px;border-radius:10px;text-decoration:none;font-family:"Oswald",sans-serif;font-size:16px;border:2px solid var(--red)}.serruriers-box{background:rgba(34,197,94,0.15);border:1px solid var(--green);padding:12px 16px;border-radius:10px;margin-top:20px;display:flex;align-items:center;gap:10px;color:var(--white)}.serruriers-box .count{font-family:"Oswald",sans-serif;font-size:28px;color:var(--green)}.serruriers-box .text{font-size:13px;line-height:1.3}';
-    html += '.express-form{background:var(--white);border-radius:16px;padding:25px;box-shadow:0 10px 40px rgba(0,0,0,0.2)}.express-form h3{font-size:20px;text-align:center;margin-bottom:5px}.express-form .subtitle{font-size:13px;color:var(--gray);text-align:center;margin-bottom:15px}.express-form .form-group{margin-bottom:12px}.express-form label{display:block;font-weight:600;margin-bottom:4px;font-size:12px}.express-form input{width:100%;padding:12px;background:var(--gray-light);border:2px solid transparent;border-radius:8px;font-size:14px}.express-form input:focus{outline:none;border-color:var(--red)}.express-form .btn-express{width:100%;padding:14px;background:var(--green);color:var(--white);border:none;border-radius:8px;font-family:"Oswald",sans-serif;font-size:16px;cursor:pointer;animation:pulse 2s infinite}';
-    html += '.section{padding:60px 0}.container{max-width:1200px;margin:0 auto;padding:0 20px}.section-header{text-align:center;margin-bottom:40px}.section-header h2{font-size:32px;margin-bottom:10px}.section-header h2 span{color:var(--red)}.section-header p{color:var(--gray)}';
-    html += '.assurances{padding:30px 0;background:var(--gray-light)}.assurances-inner{max-width:1200px;margin:0 auto;padding:0 20px}.assurances-title{text-align:center;font-size:12px;color:var(--gray);text-transform:uppercase;letter-spacing:2px;margin-bottom:15px}.assurances-logos{display:flex;justify-content:center;flex-wrap:wrap;gap:25px;align-items:center}.assurances-logos img{height:35px;opacity:0.7}';
-    html += '.garanties-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:25px}.garantie-card{text-align:center;padding:25px}.garantie-icon{width:60px;height:60px;background:var(--red-light);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 15px}.garantie-icon svg{width:28px;height:28px;fill:var(--red)}.garantie-card h4{font-size:16px;margin-bottom:8px}.garantie-card p{font-size:13px;color:var(--gray);line-height:1.5}';
-    html += '.stats{padding:50px 0;background:var(--dark)}.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:25px;text-align:center}.stat-number{font-family:"Oswald",sans-serif;font-size:42px;color:var(--red)}.stat-label{font-size:13px;color:rgba(255,255,255,0.7);text-transform:uppercase}';
-    html += '.services-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}.service-card{position:relative;height:280px;border-radius:12px;overflow:hidden;cursor:pointer}.service-card img{position:absolute;width:100%;height:100%;object-fit:cover;transition:transform 0.4s}.service-card:hover img{transform:scale(1.1)}.service-card::after{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.8),transparent)}.service-card::before{content:"";position:absolute;top:0;left:0;width:0;height:3px;background:var(--red);transition:width 0.3s;z-index:5}.service-card:hover::before{width:100%}.service-content{position:absolute;bottom:0;left:0;right:0;padding:20px;z-index:2;color:var(--white)}.service-card h3{font-size:18px;margin-bottom:6px}.service-card p{font-size:13px;opacity:0.8;margin-bottom:10px}.service-price{display:inline-block;background:var(--red);padding:6px 14px;border-radius:20px;font-size:13px;font-weight:700}';
-    html += '.avis-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}.avis-card{background:var(--white);border-radius:16px;padding:25px;box-shadow:0 3px 15px rgba(0,0,0,0.05)}.avis-stars{display:flex;gap:3px;margin-bottom:12px}.avis-stars svg{width:18px;height:18px;fill:#FBBF24}.avis-text{font-size:14px;line-height:1.6;color:var(--dark);margin-bottom:15px}.avis-author{display:flex;align-items:center;gap:10px}.avis-avatar{width:40px;height:40px;background:var(--red);color:var(--white);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700}.avis-info h4{font-size:14px}.avis-info p{font-size:12px;color:var(--gray)}';
-    html += '.contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:40px}.contact-info h3{font-size:28px;margin-bottom:15px}.contact-info h3 span{color:var(--red)}.contact-info>p{color:var(--gray);margin-bottom:25px}.contact-methods{display:flex;flex-direction:column;gap:12px}.contact-method{display:flex;align-items:center;gap:12px;padding:15px;background:var(--gray-light);border-radius:12px}.contact-method svg{width:24px;height:24px;fill:var(--red)}.contact-method h4{font-size:12px;color:var(--gray);font-weight:600;margin-bottom:2px}.contact-method a,.contact-method span{font-size:15px;color:var(--dark);text-decoration:none;font-weight:600}';
-    html += '.form-box{background:var(--white);border-radius:16px;padding:30px;box-shadow:0 5px 25px rgba(0,0,0,0.1);border:1px solid var(--gray-light)}.form-box h3{font-size:22px;text-align:center;margin-bottom:20px}.form-group{margin-bottom:15px}.form-group label{display:block;font-weight:600;margin-bottom:6px;font-size:13px}.form-group input,.form-group select{width:100%;padding:12px;background:var(--gray-light);border:2px solid transparent;border-radius:8px;font-size:14px}.form-group input:focus,.form-group select:focus{outline:none;border-color:var(--red)}.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}.btn-submit{width:100%;padding:14px;background:var(--green);color:var(--white);border:none;border-radius:8px;font-family:"Oswald",sans-serif;font-size:16px;cursor:pointer}';
-    html += '.cta{padding:60px 0;background:linear-gradient(135deg,var(--green),var(--green-dark));text-align:center}.cta h2{font-size:36px;color:var(--white);margin-bottom:10px}.cta p{color:rgba(255,255,255,0.9);margin-bottom:25px}.cta-phone{display:inline-flex;align-items:center;gap:12px;background:var(--white);color:var(--green);padding:16px 40px;border-radius:12px;text-decoration:none;font-family:"Oswald",sans-serif;font-size:26px;animation:pulse 2s infinite}.cta-phone svg{width:26px;height:26px;fill:var(--green)}';
-    html += '.faq-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:15px}.faq-item{background:var(--white);border-radius:12px;padding:20px;cursor:pointer;transition:box-shadow 0.3s}.faq-item:hover{box-shadow:0 3px 15px rgba(0,0,0,0.08)}.faq-question{display:flex;justify-content:space-between;align-items:center;font-weight:700;font-size:15px}.faq-question svg{width:20px;height:20px;fill:var(--red);transition:transform 0.3s}.faq-item.open .faq-question svg{transform:rotate(180deg)}.faq-answer{max-height:0;overflow:hidden;transition:max-height 0.3s;color:var(--gray);font-size:14px;line-height:1.6}.faq-item.open .faq-answer{max-height:150px;margin-top:12px}';
-    html += 'footer{padding:30px 0;background:var(--dark);text-align:center}footer p{color:rgba(255,255,255,0.6);font-size:13px}footer a{color:rgba(255,255,255,0.6);text-decoration:none;margin:0 8px}';
-    html += '.floating-btns{position:fixed;bottom:20px;right:20px;display:flex;flex-direction:column;gap:12px;z-index:1000}.floating-btn{width:55px;height:55px;border-radius:50%;display:flex;align-items:center;justify-content:center;text-decoration:none;box-shadow:0 4px 20px rgba(0,0,0,0.25);animation:pulse 2s infinite}.floating-btn svg{width:26px;height:26px;fill:var(--white)}.floating-btn.phone{background:var(--green)}.floating-btn.whatsapp{background:var(--whatsapp)}';
-    html += '.popup-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:2000;display:none;align-items:center;justify-content:center;padding:20px}.popup-overlay.show{display:flex}.popup{background:var(--white);border-radius:16px;padding:35px;max-width:400px;width:100%;text-align:center;position:relative}.popup-close{position:absolute;top:12px;right:12px;width:28px;height:28px;background:var(--gray-light);border:none;border-radius:50%;cursor:pointer;font-size:16px}.popup-icon{width:70px;height:70px;background:var(--red);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;animation:shake 0.5s}.popup-icon svg{width:35px;height:35px;fill:var(--white)}.popup h3{font-size:24px;margin-bottom:12px}.popup p{color:var(--gray);margin-bottom:20px;line-height:1.5}.popup .btn-popup{display:inline-flex;align-items:center;gap:8px;background:var(--green);color:var(--white);padding:14px 30px;border-radius:10px;text-decoration:none;font-family:"Oswald",sans-serif;font-size:16px;animation:pulse 2s infinite}.popup .btn-popup svg{width:20px;height:20px;fill:var(--white)}';
-    html += '@media(max-width:1024px){.hero-inner,.contact-grid{grid-template-columns:1fr}.garanties-grid,.stats-grid,.avis-grid{grid-template-columns:repeat(2,1fr)}.services-grid{grid-template-columns:repeat(2,1fr)}.faq-grid{grid-template-columns:1fr}}';
-    html += '@media(max-width:768px){.hero h1{font-size:32px}.header-inner{flex-direction:column;gap:12px}.header-phone{width:100%;justify-content:center}.hero-buttons{flex-direction:column;width:100%}.hero-buttons a{width:100%;justify-content:center}.garanties-grid,.stats-grid,.avis-grid,.services-grid{grid-template-columns:1fr}.form-row{grid-template-columns:1fr}.stat-number{font-size:32px}}';
+    html += '*{margin:0;padding:0;box-sizing:border-box}';
+    html += 'body{font-family:"Open Sans",sans-serif;background:#0B141A;min-height:100vh;display:flex;flex-direction:column}';
+    html += '.wa-header{background:#1F2C34;padding:12px 16px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100}';
+    html += '.wa-back{width:24px;height:24px;fill:#00A884;cursor:pointer}';
+    html += '.wa-avatar{width:40px;height:40px;background:#00A884;border-radius:50%;display:flex;align-items:center;justify-content:center}';
+    html += '.wa-avatar svg{width:24px;height:24px;fill:#fff}';
+    html += '.wa-info{flex:1}';
+    html += '.wa-name{color:#fff;font-weight:600;font-size:16px}';
+    html += '.wa-status{color:#8696A0;font-size:13px}';
+    html += '.wa-chat{flex:1;padding:16px;overflow-y:auto;background:#0B141A}';
+    html += '.wa-messages{max-width:500px;margin:0 auto;display:flex;flex-direction:column;gap:8px}';
+    html += '.wa-bubble{max-width:85%;padding:8px 12px;border-radius:8px;font-size:14px;line-height:1.4;position:relative;animation:fadeIn 0.3s ease}';
+    html += '@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}';
+    html += '.wa-bubble.bot{background:#1F2C34;color:#E9EDEF;align-self:flex-start;border-top-left-radius:0}';
+    html += '.wa-bubble.user{background:#005C4B;color:#E9EDEF;align-self:flex-end;border-top-right-radius:0}';
+    html += '.wa-bubble .time{font-size:11px;color:#8696A0;margin-top:4px;text-align:right}';
+    html += '.wa-options{display:flex;flex-direction:column;gap:8px;margin-top:12px}';
+    html += '.wa-option{background:#1F2C34;border:1px solid #2A3942;color:#00A884;padding:12px 16px;border-radius:8px;font-size:14px;cursor:pointer;transition:all 0.2s;text-align:left}';
+    html += '.wa-option:hover{background:#2A3942;border-color:#00A884}';
+    html += '.wa-option.selected{background:#005C4B;border-color:#005C4B;color:#fff}';
+    html += '.wa-form{display:none;flex-direction:column;gap:12px;margin-top:12px}';
+    html += '.wa-form.show{display:flex}';
+    html += '.wa-input-group{display:flex;flex-direction:column;gap:4px}';
+    html += '.wa-input-group label{color:#8696A0;font-size:12px}';
+    html += '.wa-input{background:#1F2C34;border:1px solid #2A3942;color:#E9EDEF;padding:12px;border-radius:8px;font-size:14px;outline:none;transition:border-color 0.2s}';
+    html += '.wa-input:focus{border-color:#00A884}';
+    html += '.wa-input::placeholder{color:#8696A0}';
+    html += '.wa-upload{display:flex;flex-direction:column;gap:8px}';
+    html += '.wa-upload-btn{background:#1F2C34;border:2px dashed #2A3942;color:#8696A0;padding:20px;border-radius:8px;font-size:14px;cursor:pointer;text-align:center;transition:all 0.2s}';
+    html += '.wa-upload-btn:hover{border-color:#00A884;color:#00A884}';
+    html += '.wa-upload-btn.has-file{border-color:#00A884;color:#00A884;border-style:solid}';
+    html += '.wa-upload-btn svg{width:32px;height:32px;fill:currentColor;margin-bottom:8px}';
+    html += '.wa-preview{display:none;gap:8px;flex-wrap:wrap}';
+    html += '.wa-preview.show{display:flex}';
+    html += '.wa-preview-img{width:80px;height:80px;object-fit:cover;border-radius:8px;border:2px solid #00A884}';
+    html += '.wa-send{background:#00A884;color:#fff;border:none;padding:14px 24px;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;transition:background 0.2s;display:flex;align-items:center;justify-content:center;gap:8px}';
+    html += '.wa-send:hover{background:#008F72}';
+    html += '.wa-send:disabled{background:#2A3942;cursor:not-allowed}';
+    html += '.wa-send svg{width:20px;height:20px;fill:currentColor}';
+    html += '.step{display:none}';
+    html += '.step.active{display:block}';
+    html += '.wa-success{text-align:center;padding:40px 20px}';
+    html += '.wa-success-icon{width:80px;height:80px;background:#00A884;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px}';
+    html += '.wa-success-icon svg{width:40px;height:40px;fill:#fff}';
+    html += '.wa-success h3{color:#E9EDEF;font-size:22px;margin-bottom:12px}';
+    html += '.wa-success p{color:#8696A0;font-size:15px;line-height:1.6}';
+    html += '.wa-success-btn{display:inline-block;background:#00A884;color:#fff;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:600;margin-top:24px}';
     html += '</style></head><body>';
-    html += '<svg style="display:none"><symbol id="i-phone" viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></symbol><symbol id="i-clock" viewBox="0 0 24 24"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></symbol><symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></symbol><symbol id="i-check" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></symbol><symbol id="i-bolt" viewBox="0 0 24 24"><path d="M11 21h-1l1-7H7.5c-.58 0-.57-.32-.38-.66l.07-.12C8.48 10.94 10.42 7.54 13 3h1l-1 7h3.5c.49 0 .56.33.47.51l-.07.15C12.96 17.55 11 21 11 21z"/></symbol><symbol id="i-euro" viewBox="0 0 24 24"><path d="M15 18.5c-2.51 0-4.68-1.42-5.76-3.5H15v-2H8.58c-.05-.33-.08-.66-.08-1s.03-.67.08-1H15V9H9.24C10.32 6.92 12.5 5.5 15 5.5c1.61 0 3.09.59 4.23 1.57L21 5.3C19.41 3.87 17.3 3 15 3c-3.92 0-7.24 2.51-8.48 6H3v2h3.06a8 8 0 000 2H3v2h3.52c1.24 3.49 4.56 6 8.48 6 2.31 0 4.41-.87 6-2.3l-1.78-1.77c-1.13.98-2.6 1.57-4.22 1.57z"/></symbol><symbol id="i-star" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></symbol><symbol id="i-location" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 110-5 2.5 2.5 0 010 5z"/></symbol><symbol id="i-lock" viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z"/></symbol><symbol id="i-arrow" viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6z"/></symbol><symbol id="i-whatsapp" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51l-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></symbol></svg>';
-    html += '<div class="urgence-bar"><span class="viewers-dot"></span><span id="viewersCount">14</span> personnes regardent cette page</div>';
-    html += '<header><div class="header-inner"><a href="/" class="logo"><div class="logo-icon"><svg><use href="#i-lock"/></svg></div><div class="logo-text">Ligne <span>Serrure</span></div></a><a href="tel:' + TEL_CLEAN + '" class="header-phone"><svg><use href="#i-phone"/></svg> ' + TEL + '</a></div></header>';
-    html += '<section class="hero"><div class="hero-inner"><div class="hero-content"><div class="status-badge"><span class="dot"></span>Serrurier disponible</div><h1>SERRURIER <span>' + nom.toUpperCase() + '</span></h1><p class="hero-subtitle">Intervention URGENTE en 15 minutes ' + titreComplet + '. Depannage 24h/24.</p><div class="hero-features"><div class="hero-feature"><svg><use href="#i-bolt"/></svg>15 min</div><div class="hero-feature"><svg><use href="#i-shield"/></svg>Agree assurance</div><div class="hero-feature"><svg><use href="#i-euro"/></svg>Devis gratuit</div><div class="hero-feature"><svg><use href="#i-clock"/></svg>24h/24</div></div><div class="hero-buttons"><a href="tel:' + TEL_CLEAN + '" class="btn-call"><svg><use href="#i-phone"/></svg>APPELER</a><a href="#contact" class="btn-devis">Devis gratuit</a></div><div class="serruriers-box"><span class="count" id="serruriersCount">3</span><div class="text"><strong>Serruriers disponibles</strong><br>pres de ' + nom + '</div></div></div>';
-    html += '<div class="express-form"><h3>INTERVENTION EXPRESS</h3><p class="subtitle">Rappel en 2 minutes</p><form id="expressForm"><div class="form-group"><label>Nom *</label><input type="text" id="exp_nom" required placeholder="Votre nom"></div><div class="form-group"><label>Code Postal *</label><input type="text" id="exp_cp" required placeholder="75001" maxlength="5"></div><div class="form-group"><label>Telephone *</label><input type="tel" id="exp_tel" required placeholder="0612345678" maxlength="10"></div><button type="submit" class="btn-express">DEMANDER UN RAPPEL</button></form></div></div></section>';
-    html += '<section class="assurances"><div class="assurances-inner"><div class="assurances-title">Agree par les assurances</div><div class="assurances-logos"><img src="/images/axa.png" alt="AXA"><img src="/images/maif.png" alt="MAIF"><img src="/images/groupama.png" alt="Groupama"><img src="/images/allianz.png" alt="Allianz"><img src="/images/generali.png" alt="Generali"></div></div></section>';
-    html += '<section class="section" style="background:var(--white)"><div class="container"><div class="section-header"><h2>NOS <span>GARANTIES</span></h2><p>Un service professionnel</p></div><div class="garanties-grid"><div class="garantie-card"><div class="garantie-icon"><svg><use href="#i-bolt"/></svg></div><h4>Intervention rapide</h4><p>15 a 30 min sur ' + nom + '</p></div><div class="garantie-card"><div class="garantie-icon"><svg><use href="#i-euro"/></svg></div><h4>Prix transparent</h4><p>Devis gratuit sans surprise</p></div><div class="garantie-card"><div class="garantie-icon"><svg><use href="#i-shield"/></svg></div><h4>Certifie A2P</h4><p>Serrures certifiees CNPP</p></div><div class="garantie-card"><div class="garantie-icon"><svg><use href="#i-check"/></svg></div><h4>Satisfait ou rembourse</h4><p>Garantie sur nos interventions</p></div></div></div></section>';
-    html += '<section class="stats"><div class="container"><div class="stats-grid"><div class="stat-item"><div class="stat-number" data-target="15847">0</div><div class="stat-label">Interventions</div></div><div class="stat-item"><div class="stat-number" data-target="98">0</div><div class="stat-label">% Satisfaction</div></div><div class="stat-item"><div class="stat-number" data-target="15">0</div><div class="stat-label">Min delai</div></div><div class="stat-item"><div class="stat-number" data-target="24">0</div><div class="stat-label">H/24</div></div></div></div></section>';
-    html += '<section class="section" style="background:var(--gray-light)"><div class="container"><div class="section-header"><h2>NOS <span>SERVICES</span></h2><p>Intervention pour tous problemes</p></div><div class="services-grid">';
-    html += '<div class="service-card"><img src="/images/ouverture-de-porte.jpg" alt="Ouverture porte" class="service-img"><div class="service-content"><h3>OUVERTURE PORTE</h3><p>Porte claquee ou cle perdue</p><span class="service-price">Des 89EUR</span></div></div>';
-    html += '<div class="service-card"><img src="/images/changement-de-serrure.jpg" alt="Changement serrure" class="service-img"><div class="service-content"><h3>CHANGEMENT SERRURE</h3><p>Toutes marques</p><span class="service-price">Des 129EUR</span></div></div>';
-    html += '<div class="service-card"><img src="/images/blindage-de-porte.jpeg" alt="Blindage" class="service-img"><div class="service-content"><h3>BLINDAGE PORTE</h3><p>Solutions certifiees A2P</p><span class="service-price">Des 890EUR</span></div></div>';
-    html += '<div class="service-card"><img src="/images/rideaux-metalliques.jpg" alt="Rideau metallique" class="service-img"><div class="service-content"><h3>RIDEAU METALLIQUE</h3><p>Installation et depannage</p><span class="service-price">Des 150EUR</span></div></div>';
-    html += '<div class="service-card"><img src="/images/coffre-fort.jpg" alt="Coffre fort" class="service-img"><div class="service-content"><h3>COFFRE-FORT</h3><p>Ouverture et installation</p><span class="service-price">Des 200EUR</span></div></div>';
-    html += '<div class="service-card"><img src="/images/porte-blindee.webp" alt="Porte blindee" class="service-img"><div class="service-content"><h3>PORTE BLINDEE</h3><p>Haute securite</p><span class="service-price">Sur devis</span></div></div>';
-    html += '</div></div></section>';
-    html += '<section class="section" style="background:var(--gray-light)"><div class="container"><div class="section-header"><h2>AVIS <span>CLIENTS</span></h2></div><div class="avis-grid">';
-    html += '<div class="avis-card"><div class="avis-stars"><svg><use href="#i-star"/></svg><svg><use href="#i-star"/></svg><svg><use href="#i-star"/></svg><svg><use href="#i-star"/></svg><svg><use href="#i-star"/></svg></div><p class="avis-text">"Intervention rapide en 15 min. Porte ouverte sans degat. Je recommande !"</p><div class="avis-author"><div class="avis-avatar">M</div><div class="avis-info"><h4>Marie D.</h4><p>' + nom + '</p></div></div></div>';
-    html += '<div class="avis-card"><div class="avis-stars"><svg><use href="#i-star"/></svg><svg><use href="#i-star"/></svg><svg><use href="#i-star"/></svg><svg><use href="#i-star"/></svg><svg><use href="#i-star"/></svg></div><p class="avis-text">"Dimanche soir 23h, serrurier la en 20 min. Service impeccable !"</p><div class="avis-author"><div class="avis-avatar">P</div><div class="avis-info"><h4>Pierre L.</h4><p>' + nom + '</p></div></div></div>';
-    html += '<div class="avis-card"><div class="avis-stars"><svg><use href="#i-star"/></svg><svg><use href="#i-star"/></svg><svg><use href="#i-star"/></svg><svg><use href="#i-star"/></svg><svg><use href="#i-star"/></svg></div><p class="avis-text">"Changement serrure apres cambriolage. Equipe rassurante."</p><div class="avis-author"><div class="avis-avatar">S</div><div class="avis-info"><h4>Sophie M.</h4><p>' + nom + '</p></div></div></div>';
-    html += '</div></div></section>';
-    html += '<section class="section" id="contact"><div class="container"><div class="section-header"><h2>CONTACTEZ-<span>NOUS</span></h2></div><div class="contact-grid"><div class="contact-info"><h3>BESOIN D\'UN <span>SERRURIER ?</span></h3><p>Disponible 24h/24 et 7j/7 ' + titreComplet + '.</p><div class="contact-methods"><div class="contact-method"><svg><use href="#i-phone"/></svg><div><h4>Telephone</h4><a href="tel:' + TEL_CLEAN + '">' + TEL + '</a></div></div><div class="contact-method"><svg><use href="#i-clock"/></svg><div><h4>Disponibilite</h4><span>24h/24 - 7j/7</span></div></div><div class="contact-method"><svg><use href="#i-location"/></svg><div><h4>Zone</h4><span>' + nom + ' et environs</span></div></div></div></div>';
-    html += '<div class="form-box"><h3>DEMANDE DE DEVIS</h3><form id="contactForm"><div class="form-row"><div class="form-group"><label>Nom *</label><input type="text" id="nom" required></div><div class="form-group"><label>Telephone *</label><input type="tel" id="telephone" required maxlength="10"></div></div><div class="form-row"><div class="form-group"><label>Code Postal *</label><input type="text" id="codepostal" required maxlength="5"></div><div class="form-group"><label>Adresse</label><input type="text" id="adresse"></div></div><div class="form-group"><label>Probleme *</label><select id="probleme" required><option value="">Selectionnez</option><option>Porte claquee</option><option>Cle perdue</option><option>Serrure bloquee</option><option>Cambriolage</option><option>Changement serrure</option><option>Autre</option></select></div><div class="form-group"><label>Urgence *</label><select id="urgence" required><option value="">Selectionnez</option><option>URGENT - Maintenant</option><option>Dans l\'heure</option><option>Aujourd\'hui</option><option>Cette semaine</option></select></div><button type="submit" class="btn-submit">ENVOYER</button></form></div></div></div></section>';
-    html += '<section class="cta"><div class="container"><h2>URGENCE SERRURIER ?</h2><p>Intervention en 15 minutes</p><a href="tel:' + TEL_CLEAN + '" class="cta-phone"><svg><use href="#i-phone"/></svg>' + TEL + '</a></div></section>';
-    html += '<section class="section" style="background:var(--gray-light)"><div class="container"><div class="section-header"><h2>Questions <span>Frequentes</span></h2></div><div class="faq-grid">';
-    html += '<div class="faq-item"><div class="faq-question">Delai d\'intervention ?<svg><use href="#i-arrow"/></svg></div><div class="faq-answer">15 a 30 min sur ' + nom + ' et environs.</div></div>';
-    html += '<div class="faq-item"><div class="faq-question">Nuit et week-end ?<svg><use href="#i-arrow"/></svg></div><div class="faq-answer">Oui, 24h/24 et 7j/7, jours feries inclus.</div></div>';
-    html += '<div class="faq-item"><div class="faq-question">Moyens de paiement ?<svg><use href="#i-arrow"/></svg></div><div class="faq-answer">CB, especes et cheque.</div></div>';
-    html += '<div class="faq-item"><div class="faq-question">Devis gratuit ?<svg><use href="#i-arrow"/></svg></div><div class="faq-answer">Oui, devis gratuit sur place.</div></div>';
-    html += '</div></div></section>';
-    html += '<footer><div class="container"><p>2025 ' + MARQUE + ' - Serrurier ' + nom + '</p><p><a href="/mentions-legales">Mentions legales</a><a href="/confidentialite">Confidentialite</a><a href="/cgu">CGU</a></p></div></footer>';
-    html += '<div class="floating-btns"><a href="/whatsapp" class="floating-btn whatsapp"><svg><use href="#i-whatsapp"/></svg></a><a href="tel:' + TEL_CLEAN + '" class="floating-btn phone"><svg><use href="#i-phone"/></svg></a></div>';
-    html += '<div class="popup-overlay" id="popup"><div class="popup"><button class="popup-close" onclick="closePopup()">x</button><div class="popup-icon"><svg><use href="#i-bolt"/></svg></div><h3>Besoin urgent ?</h3><p>Un serrurier peut intervenir dans 15 min.</p><a href="tel:' + TEL_CLEAN + '" class="btn-popup"><svg><use href="#i-phone"/></svg>Appeler</a></div></div>';
-    html += '<script>var TELEGRAM_BOT="' + TELEGRAM.botToken + '",TELEGRAM_CHAT="' + TELEGRAM.chatId + '",LIEU="' + nom + '";function sendTelegram(e){fetch("https://api.telegram.org/bot"+TELEGRAM_BOT+"/sendMessage",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({chat_id:TELEGRAM_CHAT,text:e,parse_mode:"HTML"})})}document.getElementById("expressForm").addEventListener("submit",function(e){e.preventDefault();var n=document.getElementById("exp_nom").value,c=document.getElementById("exp_cp").value,t=document.getElementById("exp_tel").value;sendTelegram("<b>URGENCE EXPRESS</b>\\n\\n<b>Nom:</b> "+n+"\\n<b>CP:</b> "+c+"\\n<b>Tel:</b> "+t+"\\n<b>Page:</b> "+LIEU);window.location.href="/merci"});document.getElementById("contactForm").addEventListener("submit",function(e){e.preventDefault();var d={nom:document.getElementById("nom").value,telephone:document.getElementById("telephone").value,codepostal:document.getElementById("codepostal").value,adresse:document.getElementById("adresse").value,probleme:document.getElementById("probleme").value,urgence:document.getElementById("urgence").value};sendTelegram("<b>DEVIS</b>\\n\\n<b>Nom:</b> "+d.nom+"\\n<b>Tel:</b> "+d.telephone+"\\n<b>CP:</b> "+d.codepostal+"\\n<b>Adresse:</b> "+d.adresse+"\\n<b>Probleme:</b> "+d.probleme+"\\n<b>Urgence:</b> "+d.urgence+"\\n<b>Page:</b> "+LIEU);window.location.href="/merci"});setTimeout(function(){sessionStorage.getItem("popupShown")||(document.getElementById("popup").classList.add("show"),sessionStorage.setItem("popupShown","1"))},5e3);function closePopup(){document.getElementById("popup").classList.remove("show")}document.getElementById("popup").addEventListener("click",function(e){e.target===this&&closePopup()});setInterval(function(){document.getElementById("viewersCount").textContent=Math.floor(3*Math.random())+3},8e3);setInterval(function(){document.getElementById("serruriersCount").textContent=Math.floor(4*Math.random())+2},12e3);var statsObs=new IntersectionObserver(function(e){e[0].isIntersecting&&(document.querySelectorAll(".stat-number").forEach(function(el){var target=parseInt(el.dataset.target),current=0,step=target/100;var timer=setInterval(function(){current+=step;current>=target?(el.textContent=target,clearInterval(timer)):el.textContent=Math.floor(current)},20)}),statsObs.disconnect())},{threshold:.5});statsObs.observe(document.querySelector(".stats"));document.querySelectorAll(".faq-item").forEach(function(item){item.addEventListener("click",function(){this.classList.toggle("open")})});</script>';
+    
+    html += '<div class="wa-header">';
+    html += '<svg class="wa-back" onclick="history.back()" viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>';
+    html += '<div class="wa-avatar"><svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg></div>';
+    html += '<div class="wa-info"><div class="wa-name">Ligne-Serrure</div><div class="wa-status">En ligne - Repond immediatement</div></div>';
+    html += '</div>';
+    
+    html += '<div class="wa-chat"><div class="wa-messages" id="messages">';
+    
+    html += '<div class="step active" id="step1">';
+    html += '<div class="wa-bubble bot">Bonjour ! Je suis l\'assistant Ligne-Serrure. Comment puis-je vous aider ?<div class="time">Maintenant</div></div>';
+    html += '<div class="wa-options" id="options1">';
+    html += '<div class="wa-option" data-value="Porte claquee" onclick="selectOption(1, this)">Porte claquee / Cle oubliee</div>';
+    html += '<div class="wa-option" data-value="Cle perdue" onclick="selectOption(1, this)">Cle perdue ou volee</div>';
+    html += '<div class="wa-option" data-value="Cle cassee" onclick="selectOption(1, this)">Cle cassee dans la serrure</div>';
+    html += '<div class="wa-option" data-value="Serrure bloquee" onclick="selectOption(1, this)">Serrure bloquee</div>';
+    html += '<div class="wa-option" data-value="Cambriolage" onclick="selectOption(1, this)">Cambriolage / Effraction</div>';
+    html += '<div class="wa-option" data-value="Changement serrure" onclick="selectOption(1, this)">Changement de serrure</div>';
+    html += '<div class="wa-option" data-value="Autre" onclick="selectOption(1, this)">Autre probleme</div>';
+    html += '</div></div>';
+    
+    html += '<div class="step" id="step2">';
+    html += '<div class="wa-bubble bot">D\'accord ! C\'est urgent ?<div class="time">Maintenant</div></div>';
+    html += '<div class="wa-options" id="options2">';
+    html += '<div class="wa-option" data-value="URGENT - Maintenant" onclick="selectOption(2, this)">Oui, MAINTENANT</div>';
+    html += '<div class="wa-option" data-value="Dans 1 heure" onclick="selectOption(2, this)">Dans l\'heure</div>';
+    html += '<div class="wa-option" data-value="Aujourd\'hui" onclick="selectOption(2, this)">Aujourd\'hui</div>';
+    html += '<div class="wa-option" data-value="Cette semaine" onclick="selectOption(2, this)">Cette semaine</div>';
+    html += '</div></div>';
+    
+    html += '<div class="step" id="step3">';
+    html += '<div class="wa-bubble bot">Pouvez-vous prendre une photo du probleme ? (facultatif)<div class="time">Maintenant</div></div>';
+    html += '<div class="wa-upload">';
+    html += '<label class="wa-upload-btn" id="uploadBtn">';
+    html += '<svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>';
+    html += '<div>Appuyez pour ajouter une photo</div>';
+    html += '<input type="file" id="photoInput" accept="image/*" multiple hidden onchange="handlePhotos(this)">';
+    html += '</label>';
+    html += '<div class="wa-preview" id="photoPreview"></div>';
+    html += '<button class="wa-send" onclick="goToStep4()">Continuer <svg viewBox="0 0 24 24"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg></button>';
+    html += '</div></div>';
+    
+    html += '<div class="step" id="step4">';
+    html += '<div class="wa-bubble bot">Parfait ! Vos coordonnees pour etre rappele en 2 min.<div class="time">Maintenant</div></div>';
+    html += '<div class="wa-form show">';
+    html += '<div class="wa-input-group"><label>Votre nom *</label><input type="text" class="wa-input" id="nom" placeholder="Jean Dupont" required></div>';
+    html += '<div class="wa-input-group"><label>Votre telephone *</label><input type="tel" class="wa-input" id="telephone" placeholder="0612345678" required maxlength="10"></div>';
+    html += '<div class="wa-input-group"><label>Code postal *</label><input type="text" class="wa-input" id="codepostal" placeholder="75001" required maxlength="5"></div>';
+    html += '<div class="wa-input-group"><label>Adresse (optionnel)</label><input type="text" class="wa-input" id="adresse" placeholder="123 rue de Paris"></div>';
+    html += '<div class="wa-input-group"><label>Details (optionnel)</label><textarea class="wa-input" id="details" placeholder="Decrivez votre probleme..." rows="3"></textarea></div>';
+    html += '<button class="wa-send" id="sendBtn" onclick="sendForm()">Envoyer <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg></button>';
+    html += '</div></div>';
+    
+    html += '<div class="step" id="step5">';
+    html += '<div class="wa-success">';
+    html += '<div class="wa-success-icon"><svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg></div>';
+    html += '<h3>Demande envoyee !</h3>';
+    html += '<p>Un serrurier vous rappelle dans 2 minutes.</p>';
+    html += '<a href="/" class="wa-success-btn">Retour a l\'accueil</a>';
+    html += '</div></div>';
+    
+    html += '</div></div>';
+    
+    html += '<script>';
+    html += 'var TELEGRAM_BOT="' + TELEGRAM.botToken + '";';
+    html += 'var TELEGRAM_CHAT="' + TELEGRAM.chatId + '";';
+    html += 'var formData={probleme:"",urgence:"",photos:[]};';
+    
+    html += 'function selectOption(step,el){';
+    html += '  var value=el.dataset.value;';
+    html += '  el.classList.add("selected");';
+    html += '  var userBubble=document.createElement("div");';
+    html += '  userBubble.className="wa-bubble user";';
+    html += '  userBubble.innerHTML=value+"<div class=\\"time\\">Maintenant</div>";';
+    html += '  document.getElementById("step"+step).appendChild(userBubble);';
+    html += '  document.getElementById("options"+step).style.display="none";';
+    html += '  if(step===1){formData.probleme=value;setTimeout(function(){showStep(2)},800);}';
+    html += '  if(step===2){formData.urgence=value;setTimeout(function(){showStep(3)},800);}';
+    html += '}';
+    
+    html += 'function showStep(n){';
+    html += '  document.getElementById("step"+n).classList.add("active");';
+    html += '  document.getElementById("step"+n).scrollIntoView({behavior:"smooth"});';
+    html += '}';
+    
+    html += 'function handlePhotos(input){';
+    html += '  var files=input.files;';
+    html += '  var preview=document.getElementById("photoPreview");';
+    html += '  var uploadBtn=document.getElementById("uploadBtn");';
+    html += '  formData.photos=[];';
+    html += '  if(files.length>0){';
+    html += '    uploadBtn.classList.add("has-file");';
+    html += '    uploadBtn.querySelector("div").textContent=files.length+" photo(s)";';
+    html += '    preview.classList.add("show");';
+    html += '    preview.innerHTML="";';
+    html += '    for(var i=0;i<files.length;i++){';
+    html += '      (function(file){';
+    html += '        var reader=new FileReader();';
+    html += '        reader.onload=function(e){';
+    html += '          var item=document.createElement("div");';
+    html += '          item.innerHTML="<img src=\\""+e.target.result+"\\" class=\\"wa-preview-img\\">";';
+    html += '          preview.appendChild(item);';
+    html += '          formData.photos.push(e.target.result);';
+    html += '        };';
+    html += '        reader.readAsDataURL(file);';
+    html += '      })(files[i]);';
+    html += '    }';
+    html += '  }';
+    html += '}';
+    
+    html += 'function goToStep4(){';
+    html += '  var userBubble=document.createElement("div");';
+    html += '  userBubble.className="wa-bubble user";';
+    html += '  userBubble.innerHTML=(formData.photos.length>0?formData.photos.length+" photo(s)":"Pas de photo")+"<div class=\\"time\\">Maintenant</div>";';
+    html += '  document.getElementById("step3").appendChild(userBubble);';
+    html += '  document.querySelector("#step3 .wa-upload").style.display="none";';
+    html += '  setTimeout(function(){showStep(4)},800);';
+    html += '}';
+    
+    html += 'function b64toBlob(b64Data,contentType){';
+    html += '  var sliceSize=512;';
+    html += '  var byteCharacters=atob(b64Data);';
+    html += '  var byteArrays=[];';
+    html += '  for(var offset=0;offset<byteCharacters.length;offset+=sliceSize){';
+    html += '    var slice=byteCharacters.slice(offset,offset+sliceSize);';
+    html += '    var byteNumbers=new Array(slice.length);';
+    html += '    for(var i=0;i<slice.length;i++){byteNumbers[i]=slice.charCodeAt(i);}';
+    html += '    byteArrays.push(new Uint8Array(byteNumbers));';
+    html += '  }';
+    html += '  return new Blob(byteArrays,{type:contentType||"image/jpeg"});';
+    html += '}';
+    
+    html += 'async function sendForm(){';
+    html += '  var nom=document.getElementById("nom").value.trim();';
+    html += '  var tel=document.getElementById("telephone").value.trim();';
+    html += '  var cp=document.getElementById("codepostal").value.trim();';
+    html += '  var adresse=document.getElementById("adresse").value.trim();';
+    html += '  var details=document.getElementById("details").value.trim();';
+    html += '  if(!nom||!tel||!cp){alert("Veuillez remplir les champs obligatoires");return;}';
+    html += '  if(!/^[0-9]{10}$/.test(tel)){alert("Numero invalide");return;}';
+    html += '  if(!/^[0-9]{5}$/.test(cp)){alert("Code postal invalide");return;}';
+    html += '  var btn=document.getElementById("sendBtn");';
+    html += '  btn.disabled=true;';
+    html += '  btn.innerHTML="Envoi...";';
+    
+    // Message avec emojis - tout dans caption si photo, sinon message texte
+    html += '  var msg="\\ud83d\\udea8 <b>NOUVELLE DEMANDE WHATSAPP</b> \\ud83d\\udea8\\n\\n";';
+    html += '  msg+="\\ud83d\\udd27 <b>Probleme:</b> "+formData.probleme+"\\n";';
+    html += '  msg+="\\u23f0 <b>Urgence:</b> "+formData.urgence+"\\n\\n";';
+    html += '  msg+="\\ud83d\\udc64 <b>Nom:</b> "+nom+"\\n";';
+    html += '  msg+="\\ud83d\\udcde <b>Tel:</b> "+tel+"\\n";';
+    html += '  msg+="\\ud83d\\udccd <b>CP:</b> "+cp+"\\n";';
+    html += '  if(adresse)msg+="\\ud83c\\udfe0 <b>Adresse:</b> "+adresse+"\\n";';
+    html += '  if(details)msg+="\\ud83d\\udcdd <b>Details:</b> "+details+"\\n";';
+    
+    html += '  try{';
+    html += '    if(formData.photos.length>0){';
+    // Envoyer photo avec caption (message complet dans la légende)
+    html += '      var base64=formData.photos[0].split(",")[1];';
+    html += '      var blob=b64toBlob(base64,"image/jpeg");';
+    html += '      var fd=new FormData();';
+    html += '      fd.append("chat_id",TELEGRAM_CHAT);';
+    html += '      fd.append("photo",blob,"photo.jpg");';
+    html += '      fd.append("caption",msg);';
+    html += '      fd.append("parse_mode","HTML");';
+    html += '      await fetch("https://api.telegram.org/bot"+TELEGRAM_BOT+"/sendPhoto",{method:"POST",body:fd});';
+    // Si plusieurs photos, envoyer les autres
+    html += '      for(var i=1;i<formData.photos.length;i++){';
+    html += '        var b64=formData.photos[i].split(",")[1];';
+    html += '        var bl=b64toBlob(b64,"image/jpeg");';
+    html += '        var f=new FormData();';
+    html += '        f.append("chat_id",TELEGRAM_CHAT);';
+    html += '        f.append("photo",bl,"photo"+i+".jpg");';
+    html += '        f.append("caption","\\ud83d\\udcf7 Photo "+(i+1)+" - "+nom);';
+    html += '        await fetch("https://api.telegram.org/bot"+TELEGRAM_BOT+"/sendPhoto",{method:"POST",body:f});';
+    html += '      }';
+    html += '    }else{';
+    // Pas de photo, envoyer juste le message texte
+    html += '      msg+="\\n\\ud83d\\udcf7 <b>Photo:</b> Aucune";';
+    html += '      await fetch("https://api.telegram.org/bot"+TELEGRAM_BOT+"/sendMessage",{';
+    html += '        method:"POST",';
+    html += '        headers:{"Content-Type":"application/json"},';
+    html += '        body:JSON.stringify({chat_id:TELEGRAM_CHAT,text:msg,parse_mode:"HTML"})';
+    html += '      });';
+    html += '    }';
+    html += '    showStep(5);';
+    html += '    document.querySelector("#step4 .wa-form").style.display="none";';
+    html += '  }catch(err){';
+    html += '    console.error(err);';
+    html += '    alert("Erreur, reessayez");';
+    html += '    btn.disabled=false;';
+    html += '    btn.innerHTML="Envoyer";';
+    html += '  }';
+    html += '}';
+    
+    html += '</script>';
     html += '</body></html>';
-    return html;
-}
-
-export async function onRequest(context) {
-    var url = new URL(context.request.url);
-    var path = url.pathname;
-    var match = path.match(/^\/serrurier\/(.+)$/);
-    if (!match) return new Response("Page non trouvee", { status: 404, headers: { "Content-Type": "text/html;charset=UTF-8" } });
-    var lieu = decodeURIComponent(match[1]);
-    var data = await validerLieu(lieu);
-    if (!data.valide) return new Response('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Zone non couverte</title></head><body style="font-family:sans-serif;text-align:center;padding:50px"><h1>Zone non couverte</h1><p>Desole, nous n\'intervenons pas encore dans cette zone.</p><a href="/">Retour</a></body></html>', { status: 404, headers: { "Content-Type": "text/html;charset=UTF-8" } });
-    return new Response(generateHTML(lieu, data), { status: 200, headers: { "Content-Type": "text/html;charset=UTF-8", "Cache-Control": "public, max-age=3600" } });
+    
+    return new Response(html, { status: 200, headers: { "Content-Type": "text/html;charset=UTF-8" } });
 }
