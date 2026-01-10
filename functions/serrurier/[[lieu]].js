@@ -71,7 +71,7 @@ function generateHTML(lieu, data) {
     if (type === "departement") prefix = "dans le ";
     if (type === "region") prefix = "en ";
     var titreComplet = prefix + nom;
-    var TEL = "01 84 60 60 60";
+    var TEL = "09 80 80 89 05";
     var TEL_CLEAN = TEL.replace(/\s/g, "");
     var MARQUE = "Ligne-Serrure";
     
@@ -114,11 +114,11 @@ function generateHTML(lieu, data) {
     html += '<section class="section" style="background:var(--white)"><div class="container"><div class="section-header"><h2>NOS <span>GARANTIES</span></h2><p>Un service professionnel</p></div><div class="garanties-grid"><div class="garantie-card"><div class="garantie-icon"><svg><use href="#i-bolt"/></svg></div><h4>Intervention rapide</h4><p>15 a 30 min sur ' + nom + '</p></div><div class="garantie-card"><div class="garantie-icon"><svg><use href="#i-euro"/></svg></div><h4>Prix transparent</h4><p>Devis gratuit sans surprise</p></div><div class="garantie-card"><div class="garantie-icon"><svg><use href="#i-shield"/></svg></div><h4>Certifie A2P</h4><p>Serrures certifiees CNPP</p></div><div class="garantie-card"><div class="garantie-icon"><svg><use href="#i-check"/></svg></div><h4>Satisfait ou rembourse</h4><p>Garantie sur nos interventions</p></div></div></div></section>';
     html += '<section class="stats"><div class="container"><div class="stats-grid"><div class="stat-item"><div class="stat-number" data-target="15847">0</div><div class="stat-label">Interventions</div></div><div class="stat-item"><div class="stat-number" data-target="98">0</div><div class="stat-label">% Satisfaction</div></div><div class="stat-item"><div class="stat-number" data-target="15">0</div><div class="stat-label">Min delai</div></div><div class="stat-item"><div class="stat-number" data-target="24">0</div><div class="stat-label">H/24</div></div></div></div></section>';
     html += '<section class="section" style="background:var(--gray-light)"><div class="container"><div class="section-header"><h2>NOS <span>SERVICES</span></h2><p>Intervention pour tous problemes</p></div><div class="services-grid">';
-    html += '<div class="service-card"><img src="/images/ouverture-de-porte.jpg" alt="Ouverture porte" class="service-img"><div class="service-content"><h3>OUVERTURE PORTE</h3><p>Porte claquee ou cle perdue</p><span class="service-price">Des 89EUR</span></div></div>';
-    html += '<div class="service-card"><img src="/images/changement-de-serrure.jpg" alt="Changement serrure" class="service-img"><div class="service-content"><h3>CHANGEMENT SERRURE</h3><p>Toutes marques</p><span class="service-price">Des 129EUR</span></div></div>';
-    html += '<div class="service-card"><img src="/images/blindage-de-porte.jpeg" alt="Blindage" class="service-img"><div class="service-content"><h3>BLINDAGE PORTE</h3><p>Solutions certifiees A2P</p><span class="service-price">Des 890EUR</span></div></div>';
+    html += '<div class="service-card"><img src="/images/ouverture-de-porte.jpg" alt="Ouverture porte" class="service-img"><div class="service-content"><h3>OUVERTURE PORTE</h3><p>Porte claquee ou cle perdue</p><span class="service-price">Des 69EUR</span></div></div>';
+    html += '<div class="service-card"><img src="/images/changement-de-serrure.jpg" alt="Changement serrure" class="service-img"><div class="service-content"><h3>CHANGEMENT SERRURE</h3><p>Toutes marques</p><span class="service-price">Des 89EUR</span></div></div>';
+    html += '<div class="service-card"><img src="/images/blindage-de-porte.jpeg" alt="Blindage" class="service-img"><div class="service-content"><h3>BLINDAGE PORTE</h3><p>Solutions certifiees A2P</p><span class="service-price">Sur devis</span></div></div>';
     html += '<div class="service-card"><img src="/images/rideaux-metalliques.jpg" alt="Rideau metallique" class="service-img"><div class="service-content"><h3>RIDEAU METALLIQUE</h3><p>Installation et depannage</p><span class="service-price">Des 150EUR</span></div></div>';
-    html += '<div class="service-card"><img src="/images/coffre-fort.jpg" alt="Coffre fort" class="service-img"><div class="service-content"><h3>COFFRE-FORT</h3><p>Ouverture et installation</p><span class="service-price">Des 200EUR</span></div></div>';
+    html += '<div class="service-card"><img src="/images/coffre-fort.jpg" alt="Coffre fort" class="service-img"><div class="service-content"><h3>COFFRE-FORT</h3><p>Ouverture et installation</p><span class="service-price">Sur devis</span></div></div>';
     html += '<div class="service-card"><img src="/images/porte-blindee.webp" alt="Porte blindee" class="service-img"><div class="service-content"><h3>PORTE BLINDEE</h3><p>Haute securite</p><span class="service-price">Sur devis</span></div></div>';
     html += '</div></div></section>';
     html += '<section class="section" style="background:var(--gray-light)"><div class="container"><div class="section-header"><h2>AVIS <span>CLIENTS</span></h2></div><div class="avis-grid">';
