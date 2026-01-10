@@ -1,6 +1,6 @@
 export async function onRequest(context) {
     var TELEGRAM = { botToken: "8509813115:AAHJXvp9_AHBFTpA-S7Td0IEXgZJatVSwdI", chatId: "-4875894499" };
-    var TEL = "01 84 60 60 60";
+    var TEL = "09 80 80 89 05";
     var TEL_CLEAN = TEL.replace(/\s/g, "");
     var MARQUE = "Ligne-Serrure";
     
@@ -52,11 +52,11 @@ export async function onRequest(context) {
     html += '<section class="stats"><div class="container"><div class="stats-grid"><div class="stat-item"><div class="stat-number" data-target="15847">0</div><div class="stat-label">Interventions</div></div><div class="stat-item"><div class="stat-number" data-target="98">0</div><div class="stat-label">% Satisfaction</div></div><div class="stat-item"><div class="stat-number" data-target="15">0</div><div class="stat-label">Min delai</div></div><div class="stat-item"><div class="stat-number" data-target="24">0</div><div class="stat-label">H/24</div></div></div></div></section>';
     
     html += '<section class="section" style="background:var(--gray-light)"><div class="container"><div class="section-header"><h2>NOS <span>SERVICES</span></h2><p>Intervention pour tous problemes</p></div><div class="services-grid">';
-    html += '<div class="service-card"><img src="/images/ouverture-de-porte.jpg" alt="Ouverture porte"><div class="service-content"><h3>OUVERTURE PORTE</h3><p>Porte claquee ou cle perdue</p><span class="service-price">Des 59EUR</span></div></div>';
+    html += '<div class="service-card"><img src="/images/ouverture-de-porte.jpg" alt="Ouverture porte"><div class="service-content"><h3>OUVERTURE PORTE</h3><p>Porte claquee ou cle perdue</p><span class="service-price">Des 69EUR</span></div></div>';
     html += '<div class="service-card"><img src="/images/changement-de-serrure.jpg" alt="Changement serrure"><div class="service-content"><h3>CHANGEMENT SERRURE</h3><p>Toutes marques</p><span class="service-price">Des 89EUR</span></div></div>';
-    html += '<div class="service-card"><img src="/images/blindage-de-porte.jpeg" alt="Blindage"><div class="service-content"><h3>BLINDAGE PORTE</h3><p>Solutions certifiees A2P</p><span class="service-price">Des 190EUR</span></div></div>';
+    html += '<div class="service-card"><img src="/images/blindage-de-porte.jpeg" alt="Blindage"><div class="service-content"><h3>BLINDAGE PORTE</h3><p>Solutions certifiees A2P</p><span class="service-price">Sur devis</span></div></div>';
     html += '<div class="service-card"><img src="/images/rideaux-metalliques.jpg" alt="Rideau metallique"><div class="service-content"><h3>RIDEAU METALLIQUE</h3><p>Installation et depannage</p><span class="service-price">Des 150EUR</span></div></div>';
-    html += '<div class="service-card"><img src="/images/coffre-fort.jpg" alt="Coffre fort"><div class="service-content"><h3>COFFRE-FORT</h3><p>Ouverture et installation</p><span class="service-price">Des 200EUR</span></div></div>';
+    html += '<div class="service-card"><img src="/images/coffre-fort.jpg" alt="Coffre fort"><div class="service-content"><h3>COFFRE-FORT</h3><p>Ouverture et installation</p><span class="service-price">Sur devis</span></div></div>';
     html += '<div class="service-card"><img src="/images/porte-blindee.webp" alt="Porte blindee"><div class="service-content"><h3>PORTE BLINDEE</h3><p>Haute securite</p><span class="service-price">Sur devis</span></div></div>';
     html += '</div></div></section>';
     
