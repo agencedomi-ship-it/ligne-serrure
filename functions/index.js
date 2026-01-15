@@ -1,6 +1,6 @@
 export async function onRequest(context) {
     var MARQUE = "Ligne-Serrure";
-    var TEL = "01 84 60 60 60";
+    var TEL = "01 80 80 89 05";
     var TEL_CLEAN = TEL.replace(/\s/g, "");
     
     var html = '<!DOCTYPE html><html lang="fr"><head>';
