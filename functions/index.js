@@ -1,114 +1,40 @@
 export async function onRequest(context) {
-    var MARQUE = "Ligne-Serrure";
-    var TEL = "01 80 80 89 05";
+    var TEL = "09 80 80 89 05";
     var TEL_CLEAN = TEL.replace(/\s/g, "");
+    var MARQUE = "Ligne-Serrure";
     
     var html = '<!DOCTYPE html><html lang="fr"><head>';
+    html += '<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({"gtm.start":new Date().getTime(),event:"gtm.js"});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!="dataLayer"?"&l="+l:"";j.async=true;j.src="https://www.googletagmanager.com/gtm.js?id="+i+dl;f.parentNode.insertBefore(j,f);})(window,document,"script","dataLayer","GTM-MFN4PQQD");</script>';
     html += '<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">';
-    html += '<title>' + MARQUE + ' | Serrurier Urgence 24h/24 partout en France</title>';
-    html += '<meta name="description" content="Serrurier d\'urgence 24h/24 et 7j/7. Intervention en 15 minutes. Devis gratuit. Appelez le ' + TEL + '">';
-    html += '<link rel="preconnect" href="https://fonts.googleapis.com">';
+    html += '<title>' + MARQUE + ' | Serrurier Urgence 24h/24</title>';
+    html += '<meta name="description" content="Serrurier urgence 24h/24. Intervention en 20 minutes. Devis gratuit.">';
+    html += '<link rel="icon" type="image/png" href="/images/favicon.png">';
+    html += '<link rel="apple-touch-icon" href="/images/favicon.png">';
     html += '<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">';
     html += '<style>';
-    
-    html += ':root{--orange:#F59E0B;--orange-dark:#D97706;--dark:#111111;--dark-lighter:#1a1a1a;--gray:#6B7280;--gray-light:#9CA3AF;--white:#FFFFFF}';
-    html += '*{margin:0;padding:0;box-sizing:border-box}';
-    html += 'body{font-family:"Open Sans",sans-serif;background:var(--dark);color:var(--white);min-height:100vh;display:flex;flex-direction:column}';
-    html += 'h1,h2,h3{font-family:"Oswald",sans-serif;font-weight:700;text-transform:uppercase}';
-    
-    html += 'header{padding:25px 0}';
-    html += '.header-inner{max-width:1200px;margin:0 auto;padding:0 20px;display:flex;justify-content:space-between;align-items:center}';
-    html += '.logo{font-family:"Oswald",sans-serif;font-size:28px;font-weight:700;font-style:italic;color:var(--white);text-decoration:none}';
-    html += '.logo span{color:var(--orange)}';
-    html += '.header-phone{display:flex;align-items:center;gap:10px;background:transparent;border:2px solid var(--orange);color:var(--orange);padding:12px 25px;border-radius:50px;text-decoration:none;font-weight:700;font-size:16px;transition:all 0.3s}';
-    html += '.header-phone:hover{background:var(--orange);color:var(--dark)}';
-    html += '.header-phone svg{width:18px;height:18px;fill:currentColor}';
-    
-    html += '.hero{flex:1;display:flex;align-items:center;justify-content:center;padding:40px 20px;text-align:center}';
-    html += '.hero-content{max-width:900px}';
-    
-    html += '.badge{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);padding:10px 20px;border-radius:50px;margin-bottom:30px;font-size:14px;color:var(--orange)}';
-    html += '.badge-dot{width:8px;height:8px;background:#22C55E;border-radius:50%;animation:blink 1s infinite}';
-    html += '@keyframes blink{0%,100%{opacity:1}50%{opacity:0.4}}';
-    
-    html += '.hero h1{font-size:72px;margin-bottom:25px;line-height:1}';
-    html += '.hero h1 span{color:var(--orange)}';
-    html += '.hero-subtitle{font-size:18px;color:var(--gray-light);margin-bottom:50px;line-height:1.6;max-width:600px;margin-left:auto;margin-right:auto}';
-    
-    html += '.search-container{position:relative;max-width:700px;margin:0 auto 50px}';
-    html += '.search-form{display:flex;background:var(--dark-lighter);border:1px solid #333;border-radius:12px;overflow:hidden}';
-    html += '.search-input{flex:1;padding:20px 25px;font-size:16px;border:none;background:transparent;color:var(--white);outline:none}';
-    html += '.search-input::placeholder{color:var(--gray)}';
-    html += '.search-btn{padding:20px 30px;background:var(--orange);color:var(--dark);border:none;font-family:"Open Sans",sans-serif;font-size:16px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;transition:all 0.3s}';
-    html += '.search-btn:hover{background:var(--orange-dark)}';
-    html += '.search-btn svg{width:18px;height:18px;fill:currentColor}';
-    
-    html += '.suggestions{position:absolute;top:100%;left:0;right:0;background:var(--dark-lighter);border:1px solid #333;border-radius:12px;margin-top:10px;display:none;z-index:100;max-height:300px;overflow-y:auto}';
-    html += '.suggestions.show{display:block}';
-    html += '.suggestion-item{padding:15px 20px;color:var(--white);cursor:pointer;border-bottom:1px solid #333;display:flex;align-items:center;gap:12px;transition:background 0.2s}';
-    html += '.suggestion-item:last-child{border-bottom:none}';
-    html += '.suggestion-item:hover{background:rgba(255,255,255,0.05)}';
-    html += '.suggestion-item svg{width:18px;height:18px;fill:var(--gray)}';
-    html += '.suggestion-type{font-size:12px;color:var(--gray);margin-left:auto;text-transform:uppercase}';
-    html += '.search-error{color:#EF4444;margin-top:15px;display:none}';
-    html += '.search-error.show{display:block}';
-    
-    html += '.popular{text-align:center}';
-    html += '.popular-title{font-size:14px;color:var(--gray);margin-bottom:20px}';
-    html += '.popular-tags{display:flex;flex-wrap:wrap;justify-content:center;gap:10px}';
-    html += '.popular-tag{background:var(--dark-lighter);border:1px solid #333;color:var(--white);padding:10px 20px;border-radius:50px;text-decoration:none;font-size:14px;transition:all 0.3s}';
-    html += '.popular-tag:hover{border-color:var(--orange);color:var(--orange)}';
-    
-    html += 'footer{padding:30px 0;text-align:center;border-top:1px solid #222}';
-    html += 'footer p{color:var(--gray);font-size:14px}';
-    html += 'footer a{color:var(--gray);text-decoration:none;margin:0 10px}';
-    html += 'footer a:hover{color:var(--white)}';
-    
-    html += '@media(max-width:768px){.hero h1{font-size:42px}.search-form{flex-direction:column}.search-btn{justify-content:center}.header-phone span{display:none}}';
-    
+    html += ':root{--green:#22C55E;--red:#DC2626;--dark:#1F2937;--gray:#6B7280;--gray-light:#F9FAFB;--white:#FFFFFF}';
+    html += '*{margin:0;padding:0;box-sizing:border-box}body{font-family:"Open Sans",sans-serif;color:var(--dark);background:var(--white)}h1,h2,h3{font-family:"Oswald",sans-serif;font-weight:700}';
+    html += '@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}';
+    html += 'header{background:var(--white);box-shadow:0 2px 10px rgba(0,0,0,0.1);padding:15px 0}.header-inner{max-width:1200px;margin:0 auto;padding:0 20px;display:flex;justify-content:space-between;align-items:center}.logo{display:flex;align-items:center;gap:10px;text-decoration:none}.logo-icon{width:50px;height:50px;border-radius:10px;overflow:hidden}.logo-icon img{width:100%;height:100%;object-fit:cover}.logo-text{font-family:"Oswald",sans-serif;font-size:24px;color:var(--dark)}.logo-text span{color:var(--red)}.header-phone{display:flex;align-items:center;gap:8px;background:var(--green);color:var(--white);padding:12px 25px;border-radius:50px;text-decoration:none;font-weight:700;animation:pulse 2s infinite}';
+    html += '.hero{background:linear-gradient(rgba(0,0,0,0.6),rgba(0,0,0,0.6)),url("/images/camion.png") center/cover;padding:100px 0;text-align:center;color:var(--white)}.hero h1{font-size:48px;margin-bottom:20px}.hero h1 span{color:var(--red)}.hero p{font-size:18px;margin-bottom:30px;opacity:0.9}.hero-buttons{display:flex;gap:15px;justify-content:center;flex-wrap:wrap}.btn-call{display:inline-flex;align-items:center;gap:8px;background:var(--green);color:var(--white);padding:16px 32px;border-radius:10px;text-decoration:none;font-family:"Oswald",sans-serif;font-size:18px;animation:pulse 2s infinite}.btn-search{display:inline-flex;align-items:center;background:var(--white);color:var(--red);padding:16px 32px;border-radius:10px;text-decoration:none;font-family:"Oswald",sans-serif;font-size:18px}';
+    html += '.search-section{padding:60px 0;background:var(--gray-light)}.search-box{max-width:600px;margin:0 auto;text-align:center}.search-box h2{font-size:32px;margin-bottom:20px}.search-box h2 span{color:var(--red)}.search-form{display:flex;gap:10px}.search-form input{flex:1;padding:16px;border:2px solid var(--gray-light);border-radius:10px;font-size:16px}.search-form input:focus{outline:none;border-color:var(--red)}.search-form button{background:var(--red);color:var(--white);border:none;padding:16px 32px;border-radius:10px;font-family:"Oswald",sans-serif;font-size:16px;cursor:pointer}';
+    html += '.features{padding:60px 0}.features-grid{max-width:1200px;margin:0 auto;padding:0 20px;display:grid;grid-template-columns:repeat(4,1fr);gap:30px;text-align:center}.feature-card{padding:30px}.feature-icon{font-size:48px;margin-bottom:15px}.feature-card h3{font-size:18px;margin-bottom:10px}.feature-card p{color:var(--gray);font-size:14px}';
+    html += 'footer{background:var(--dark);padding:30px 0;text-align:center}footer p{color:rgba(255,255,255,0.6);font-size:13px}footer a{color:rgba(255,255,255,0.6);text-decoration:none;margin:0 10px}';
+    html += '@media(max-width:768px){.hero h1{font-size:32px}.features-grid{grid-template-columns:1fr 1fr}.search-form{flex-direction:column}.header-inner{flex-direction:column;gap:15px}}';
     html += '</style></head><body>';
+    html += '<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-MFN4PQQD" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>';
     
-    html += '<header><div class="header-inner">';
-    html += '<a href="/" class="logo">LIGNE<span>SERRURE</span></a>';
-    html += '<a href="tel:' + TEL_CLEAN + '" class="header-phone"><svg viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg><span>' + TEL + '</span></a>';
-    html += '</div></header>';
+    html += '<header><div class="header-inner"><a href="/" class="logo"><div class="logo-icon"><img src="/images/favicon.png" alt="Logo"></div><div class="logo-text">Ligne <span>Serrure</span></div></a><a href="tel:' + TEL_CLEAN + '" class="header-phone">' + TEL + '</a></div></header>';
     
-    html += '<main class="hero"><div class="hero-content">';
-    html += '<div class="badge"><span class="badge-dot"></span> Serruriers disponibles 24h/24</div>';
-    html += '<h1>TROUVEZ UN <span>SERRURIER</span></h1>';
-    html += '<p class="hero-subtitle">Entrez votre ville, code postal ou departement pour trouver un serrurier professionnel disponible immediatement.</p>';
+    html += '<section class="hero"><div><h1>SERRURIER <span>URGENCE</span></h1><p>Intervention en 20 minutes - 24h/24 - 7j/7</p><div class="hero-buttons"><a href="tel:' + TEL_CLEAN + '" class="btn-call">APPELER ' + TEL + '</a><a href="/autour-de-vous" class="btn-search">TROUVER UN SERRURIER</a></div></div></section>';
     
-    html += '<div class="search-container">';
-    html += '<form class="search-form" id="searchForm">';
-    html += '<input type="text" class="search-input" id="searchInput" placeholder="Ville, code postal ou departement..." autocomplete="off">';
-    html += '<button type="submit" class="search-btn"><svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg> Rechercher</button>';
-    html += '</form>';
-    html += '<div class="suggestions" id="suggestions"></div>';
-    html += '<p class="search-error" id="searchError">Erreur de recherche</p>';
-    html += '</div>';
+    html += '<section class="search-section"><div class="search-box"><h2>RECHERCHER <span>VOTRE VILLE</span></h2><form class="search-form" onsubmit="searchCity(event)"><input type="text" id="citySearch" placeholder="Entrez votre ville ou code postal..." required><button type="submit">RECHERCHER</button></form></div></section>';
     
-    html += '<div class="popular">';
-    html += '<p class="popular-title">Recherches populaires</p>';
-    html += '<div class="popular-tags">';
-    html += '<a href="/serrurier/paris" class="popular-tag">Paris</a>';
-    html += '<a href="/serrurier/lyon" class="popular-tag">Lyon</a>';
-    html += '<a href="/serrurier/nantes" class="popular-tag">Nantes</a>';
-    html += '<a href="/serrurier/bordeaux" class="popular-tag">Bordeaux</a>';
-    html += '<a href="/serrurier/nice" class="popular-tag">Nice</a>';
-    html += '<a href="/serrurier/toulouse" class="popular-tag">Toulouse</a>';
-    html += '</div></div>';
+    html += '<section class="features"><div class="features-grid"><div class="feature-card"><div class="feature-icon">⚡</div><h3>INTERVENTION 20 MIN</h3><p>Nos serruriers arrivent en 20 minutes</p></div><div class="feature-card"><div class="feature-icon">🔒</div><h3>CERTIFIE A2P</h3><p>Serrures agreees assurance</p></div><div class="feature-card"><div class="feature-icon">💰</div><h3>DEVIS GRATUIT</h3><p>Prix transparent sans surprise</p></div><div class="feature-card"><div class="feature-icon">🕐</div><h3>24H/24 7J/7</h3><p>Disponible jour et nuit</p></div></div></section>';
     
-    html += '</div></main>';
+    html += '<footer><p>2025 ' + MARQUE + '</p><p><a href="/mentions-legales">Mentions legales</a><a href="/confidentialite">Confidentialite</a><a href="/cgu">CGU</a></p></footer>';
     
-    html += '<footer><p>2025 ' + MARQUE + ' - Tous droits reserves</p>';
-    html += '<p><a href="/mentions-legales">Mentions legales</a><a href="/confidentialite">Confidentialite</a><a href="/cgu">CGU</a></p></footer>';
-    
-    html += '<script>';
-    html += 'var searchInput=document.getElementById("searchInput");var suggestions=document.getElementById("suggestions");var searchForm=document.getElementById("searchForm");var debounceTimer;';
-    html += 'searchInput.addEventListener("input",function(){clearTimeout(debounceTimer);var query=this.value.trim();if(query.length<2){suggestions.classList.remove("show");return;}debounceTimer=setTimeout(function(){fetch("/api/suggestions?q="+encodeURIComponent(query)).then(function(r){return r.json();}).then(function(data){if(data.length===0){suggestions.classList.remove("show");return;}var html="";data.forEach(function(item){html+="<div class=\\"suggestion-item\\" data-slug=\\""+item.slug+"\\"><svg viewBox=\\"0 0 24 24\\"><path d=\\"M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z\\"/></svg><span>"+item.nom+"</span><span class=\\"suggestion-type\\">"+item.type+"</span></div>";});suggestions.innerHTML=html;suggestions.classList.add("show");document.querySelectorAll(".suggestion-item").forEach(function(el){el.addEventListener("click",function(){window.location.href="/serrurier/"+this.dataset.slug;});});}).catch(function(){suggestions.classList.remove("show");});},300);});';
-    html += 'searchForm.addEventListener("submit",function(e){e.preventDefault();var query=searchInput.value.trim();if(query.length>=2){var slug=query.toLowerCase().normalize("NFD").replace(/[\\u0300-\\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"");window.location.href="/serrurier/"+slug;}});';
-    html += 'document.addEventListener("click",function(e){if(!e.target.closest(".search-container")){suggestions.classList.remove("show");}});';
-    html += '</script>';
+    html += '<script>function searchCity(e){e.preventDefault();var city=document.getElementById("citySearch").value.trim().toLowerCase().replace(/\\s+/g,"-");window.location.href="/serrurier/"+encodeURIComponent(city);}</script>';
     html += '</body></html>';
     
     return new Response(html, { status: 200, headers: { "Content-Type": "text/html;charset=UTF-8" } });
