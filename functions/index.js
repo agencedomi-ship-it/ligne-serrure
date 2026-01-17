@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ligne Serrure - Trouvez un serrurier pres de chez vous</title>
-    <meta name="description" content="Trouvez un serrurier professionnel disponible 24h/24. Intervention rapide en 30 minutes, devis gratuit.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -12,8 +11,11 @@
         *{margin:0;padding:0;box-sizing:border-box}
         body{font-family:'DM Sans',sans-serif;background:var(--dark);color:var(--white);min-height:100vh}
         header{padding:24px 40px;display:flex;justify-content:space-between;align-items:center;max-width:1400px;margin:0 auto}
-        .logo{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:2px;text-decoration:none;color:var(--white)}
-        .logo span{color:var(--primary)}
+        .logo{display:flex;align-items:center;gap:12px;text-decoration:none}
+        .logo-icon{width:50px;height:50px;border-radius:10px;overflow:hidden}
+        .logo-icon img{width:100%;height:100%;object-fit:cover}
+        .logo-text{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:2px;color:var(--white)}
+        .logo-text span{color:var(--primary)}
         .header-phone{display:flex;align-items:center;gap:12px;background:var(--primary);color:var(--dark);padding:12px 24px;border-radius:50px;text-decoration:none;font-weight:700;transition:all .3s}
         .header-phone:hover{background:var(--primary-dark);transform:translateY(-2px)}
         .header-phone svg{width:20px;height:20px;fill:var(--dark)}
@@ -27,24 +29,11 @@
         .search-container{max-width:600px;margin:0 auto;position:relative}
         .search-box{display:flex;background:var(--dark-light);border:2px solid #333;border-radius:16px;overflow:hidden;transition:all .3s}
         .search-box:focus-within{border-color:var(--primary);box-shadow:0 0 0 4px rgba(245,166,35,.1)}
-        .search-box.has-suggestions{border-radius:16px 16px 0 0}
         .search-box input{flex:1;padding:20px 24px;background:transparent;border:none;color:var(--white);font-size:18px;font-family:inherit;outline:none}
         .search-box input::placeholder{color:var(--gray)}
         .search-box button{padding:20px 32px;background:var(--primary);border:none;color:var(--dark);font-size:16px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px;transition:all .3s;font-family:inherit}
         .search-box button:hover{background:var(--primary-dark)}
         .search-box button svg{width:20px;height:20px;fill:var(--dark)}
-        .suggestions{position:absolute;top:100%;left:0;right:0;background:var(--dark-light);border:2px solid var(--primary);border-top:none;border-radius:0 0 16px 16px;max-height:350px;overflow-y:auto;display:none;z-index:100}
-        .suggestions.show{display:block}
-        .suggestion-item{padding:16px 24px;cursor:pointer;display:flex;align-items:center;gap:12px;transition:background .2s;border-bottom:1px solid #333}
-        .suggestion-item:last-child{border-bottom:none}
-        .suggestion-item:hover,.suggestion-item.selected{background:rgba(245,166,35,.15)}
-        .suggestion-type{font-size:11px;padding:4px 10px;border-radius:4px;font-weight:700;text-transform:uppercase}
-        .suggestion-type.ville{background:#3B82F6;color:white}
-        .suggestion-type.departement{background:#10B981;color:white}
-        .suggestion-type.region{background:#8B5CF6;color:white}
-        .suggestion-name{color:var(--white);font-size:16px}
-        .loading,.no-results{padding:20px;text-align:center;color:var(--gray)}
-        .no-results{color:var(--error)}
         .popular{margin-top:40px}
         .popular h4{font-size:14px;color:var(--gray);margin-bottom:20px;font-weight:500}
         .popular-tags{display:flex;flex-wrap:wrap;justify-content:center;gap:12px}
@@ -58,7 +47,7 @@
         .feature h3{font-size:20px;font-weight:700;margin-bottom:12px}
         .feature p{color:var(--gray);font-size:15px;line-height:1.6}
         footer{text-align:center;padding:40px 20px;border-top:1px solid #333;color:var(--gray);font-size:14px}
-        footer a{color:var(--primary);text-decoration:none}
+        footer a{color:var(--primary);text-decoration:none;margin:0 10px}
         @media(max-width:768px){header{padding:16px 20px;flex-direction:column;gap:16px}.hero{padding:60px 20px 80px}.search-box{flex-direction:column}.search-box button{justify-content:center}.header-phone{width:100%;justify-content:center}}
     </style>
 </head>
@@ -73,8 +62,13 @@
     </svg>
 
     <header>
-        <a href="/" class="logo">LIGNE<span>SERRURE</span></a>
-        <a href="tel:0800123456" class="header-phone"><svg><use href="#i-phone"/></svg> 0 800 123 456</a>
+        <a href="/" class="logo">
+            <div class="logo-icon">
+                <img src="https://i.ibb.co/4R5xvKsL/Logo-moderne-avec-maison-et-lettres-LS.png" alt="Logo LS">
+            </div>
+            <div class="logo-text">LIGNE<span>SERRURE</span></div>
+        </a>
+        <a href="tel:0980808905" class="header-phone"><svg><use href="#i-phone"/></svg> 09 80 80 89 05</a>
     </header>
 
     <section class="hero">
@@ -87,124 +81,49 @@
                 <input type="text" id="searchInput" placeholder="Ville, code postal ou departement..." autocomplete="off" required>
                 <button type="submit"><svg><use href="#i-search"/></svg> Rechercher</button>
             </form>
-            <div class="suggestions" id="suggestions"></div>
         </div>
 
         <div class="popular">
             <h4>Recherches populaires</h4>
             <div class="popular-tags">
-                <a href="/serrurier/nantes" class="popular-tag">Nantes</a>
-                <a href="/serrurier/bordeaux" class="popular-tag">Bordeaux</a>
+                <a href="/serrurier/paris" class="popular-tag">Paris</a>
                 <a href="/serrurier/lyon" class="popular-tag">Lyon</a>
-                <a href="/serrurier/rennes" class="popular-tag">Rennes</a>
+                <a href="/serrurier/marseille" class="popular-tag">Marseille</a>
+                <a href="/serrurier/bordeaux" class="popular-tag">Bordeaux</a>
                 <a href="/serrurier/nice" class="popular-tag">Nice</a>
                 <a href="/serrurier/toulouse" class="popular-tag">Toulouse</a>
-                <a href="/serrurier/montpellier" class="popular-tag">Montpellier</a>
-                <a href="/serrurier/44" class="popular-tag">Loire-Atlantique (44)</a>
+                <a href="/serrurier/nantes" class="popular-tag">Nantes</a>
+                <a href="/serrurier/92" class="popular-tag">Hauts-de-Seine (92)</a>
             </div>
         </div>
     </section>
 
     <section class="features">
-        <div class="feature"><div class="feature-icon"><svg><use href="#i-bolt"/></svg></div><h3>Intervention en 30 min</h3><p>Nos serruriers se deplacent rapidement pour intervenir chez vous.</p></div>
-        <div class="feature"><div class="feature-icon"><svg><use href="#i-euro"/></svg></div><h3>Devis gratuit</h3><p>Recevez un devis transparent et sans engagement avant toute intervention.</p></div>
-        <div class="feature"><div class="feature-icon"><svg><use href="#i-shield"/></svg></div><h3>Agree assurances</h3><p>Tous nos serruriers sont agrees par les compagnies d assurance.</p></div>
-        <div class="feature"><div class="feature-icon"><svg><use href="#i-clock"/></svg></div><h3>Disponible 24h/24</h3><p>Nos serruriers sont disponibles jour et nuit, 7j/7.</p></div>
+        <div class="feature">
+            <div class="feature-icon"><svg><use href="#i-bolt"/></svg></div>
+            <h3>Intervention en 20 min</h3>
+            <p>Nos serruriers se deplacent rapidement pour intervenir chez vous.</p>
+        </div>
+        <div class="feature">
+            <div class="feature-icon"><svg><use href="#i-euro"/></svg></div>
+            <h3>Devis gratuit</h3>
+            <p>Recevez un devis transparent et sans engagement avant toute intervention.</p>
+        </div>
+        <div class="feature">
+            <div class="feature-icon"><svg><use href="#i-shield"/></svg></div>
+            <h3>Agree assurances</h3>
+            <p>Tous nos serruriers sont agrees par les compagnies d assurance.</p>
+        </div>
+        <div class="feature">
+            <div class="feature-icon"><svg><use href="#i-clock"/></svg></div>
+            <h3>Disponible 24h/24</h3>
+            <p>Nos serruriers sont disponibles jour et nuit, 7j/7.</p>
+        </div>
     </section>
 
-    <footer><p>2025 Ligne Serrure - Tous droits reserves | <a href="tel:0800123456">0 800 123 456</a></p></footer>
-
-    <script>
-        var searchInput = document.getElementById('searchInput');
-        var searchForm = document.getElementById('searchForm');
-        var suggestionsDiv = document.getElementById('suggestions');
-        var searchBox = document.querySelector('.search-box');
-        var debounceTimer;
-        var currentSuggestions = [];
-        var selectedIndex = -1;
-
-        function slugify(text) {
-            return text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-        }
-
-        function showSuggestions() { suggestionsDiv.classList.add('show'); searchBox.classList.add('has-suggestions'); }
-        function hideSuggestions() { suggestionsDiv.classList.remove('show'); searchBox.classList.remove('has-suggestions'); selectedIndex = -1; }
-
-        function updateSelection() {
-            var items = document.querySelectorAll('.suggestion-item');
-            for (var i = 0; i < items.length; i++) {
-                if (i === selectedIndex) items[i].classList.add('selected');
-                else items[i].classList.remove('selected');
-            }
-        }
-
-        function fetchSuggestions(query) {
-            if (query.length < 2) { hideSuggestions(); return; }
-            suggestionsDiv.innerHTML = '<div class="loading">Recherche en cours...</div>';
-            showSuggestions();
-
-            fetch('/api/suggestions?q=' + encodeURIComponent(query))
-                .then(function(r) { return r.json(); })
-                .then(function(suggestions) {
-                    currentSuggestions = suggestions;
-                    selectedIndex = -1;
-                    if (suggestions.length === 0) {
-                        suggestionsDiv.innerHTML = '<div class="no-results">Aucun resultat dans nos zones</div>';
-                    } else {
-                        var html = '';
-                        for (var i = 0; i < suggestions.length; i++) {
-                            var s = suggestions[i];
-                            html += '<div class="suggestion-item" data-index="' + i + '" data-slug="' + s.slug + '"><span class="suggestion-type ' + s.type + '">' + s.type + '</span><span class="suggestion-name">' + s.nom + '</span></div>';
-                        }
-                        suggestionsDiv.innerHTML = html;
-                        var items = document.querySelectorAll('.suggestion-item');
-                        for (var j = 0; j < items.length; j++) {
-                            items[j].addEventListener('click', function() {
-                                window.location.href = '/serrurier/' + this.dataset.slug;
-                            });
-                        }
-                    }
-                })
-                .catch(function() {
-                    suggestionsDiv.innerHTML = '<div class="no-results">Erreur de recherche</div>';
-                });
-        }
-
-        searchInput.addEventListener('input', function(e) {
-            clearTimeout(debounceTimer);
-            var val = e.target.value.trim();
-            debounceTimer = setTimeout(function() { fetchSuggestions(val); }, 300);
-        });
-
-        searchInput.addEventListener('focus', function() {
-            if (searchInput.value.length >= 2) fetchSuggestions(searchInput.value.trim());
-        });
-
-        document.addEventListener('click', function(e) {
-            if (!searchForm.contains(e.target) && !suggestionsDiv.contains(e.target)) hideSuggestions();
-        });
-
-        searchForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            var query = searchInput.value.trim();
-            if (query) {
-                if (selectedIndex >= 0 && currentSuggestions[selectedIndex]) {
-                    window.location.href = '/serrurier/' + currentSuggestions[selectedIndex].slug;
-                } else if (currentSuggestions.length > 0) {
-                    window.location.href = '/serrurier/' + currentSuggestions[0].slug;
-                } else {
-                    window.location.href = '/serrurier/' + slugify(query);
-                }
-            }
-        });
-
-        searchInput.addEventListener('keydown', function(e) {
-            var items = document.querySelectorAll('.suggestion-item');
-            if (e.key === 'ArrowDown') { e.preventDefault(); selectedIndex = Math.min(selectedIndex + 1, items.length - 1); updateSelection(); }
-            else if (e.key === 'ArrowUp') { e.preventDefault(); selectedIndex = Math.max(selectedIndex - 1, -1); updateSelection(); }
-            else if (e.key === 'Enter' && selectedIndex >= 0 && items[selectedIndex]) { e.preventDefault(); items[selectedIndex].click(); }
-            else if (e.key === 'Escape') { hideSuggestions(); }
-        });
-    </script>
+    <footer>
+        <p>2025 Ligne Serrure - Tous droits reserves | <a href="tel:0980808905">09 80 80 89 05</a></p>
+        <p><a href="/mentions-legales">Mentions legales</a><a href="/confidentialite">Confidentialite</a><a href="/cgu">CGU</a></p>
+    </footer>
 </body>
 </html>
